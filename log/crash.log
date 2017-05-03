@@ -1,0 +1,50 @@
+2017-05-01 19:27:04 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Logger.Supervisor'}
+     Context:    child_terminated
+     Reason:     normal
+     Offender:   [{pid,<0.711.0>},{id,'Elixir.Logger.ErrorHandler'},{mfargs,{'Elixir.Logger.Watcher',watcher,[error_logger,'Elixir.Logger.ErrorHandler',{true,false,500}]}},{restart_type,permanent},{shutdown,5000},{child_type,worker}]
+
+2017-05-01 19:27:04 =CRASH REPORT====
+  crasher:
+    initial call: supervisor:mcd_cluster_sup/1
+    pid: <0.749.0>
+    registered_name: []
+    exception exit: {{{badmatch,undefined},[{mcd_cluster_sup,buckets,0,[{file,"/Users/enrique/webs/memcachir/deps/mcd/src/mcd_cluster_sup.erl"},{line,60}]},{mcd_cluster_sup,clusters,0,[{file,"/Users/enrique/webs/memcachir/deps/mcd/src/mcd_cluster_sup.erl"},{line,64}]},{mcd_cluster_sup,init,1,[{file,"/Users/enrique/webs/memcachir/deps/mcd/src/mcd_cluster_sup.erl"},{line,41}]},{supervisor,init,1,[{file,"supervisor.erl"},{line,294}]},{gen_server,init_it,6,[{file,"gen_server.erl"},{line,328}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,247}]}]},[{gen_server,init_it,6,[{file,"gen_server.erl"},{line,352}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,247}]}]}
+    ancestors: [<0.748.0>]
+    messages: []
+    links: [<0.748.0>]
+    dictionary: []
+    trap_exit: true
+    status: running
+    heap_size: 987
+    stack_size: 27
+    reductions: 152
+  neighbours:
+2017-05-01 19:27:04 =CRASH REPORT====
+  crasher:
+    initial call: application_master:init/4
+    pid: <0.747.0>
+    registered_name: []
+    exception exit: {{{{badmatch,undefined},[{mcd_cluster_sup,buckets,0,[{file,"/Users/enrique/webs/memcachir/deps/mcd/src/mcd_cluster_sup.erl"},{line,60}]},{mcd_cluster_sup,clusters,0,[{file,"/Users/enrique/webs/memcachir/deps/mcd/src/mcd_cluster_sup.erl"},{line,64}]},{mcd_cluster_sup,init,1,[{file,"/Users/enrique/webs/memcachir/deps/mcd/src/mcd_cluster_sup.erl"},{line,41}]},{supervisor,init,1,[{file,"supervisor.erl"},{line,294}]},{gen_server,init_it,6,[{file,"gen_server.erl"},{line,328}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,247}]}]},{mcd_app,start,[normal,[]]}},[{application_master,init,4,[{file,"application_master.erl"},{line,134}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,247}]}]}
+    ancestors: [<0.746.0>]
+    messages: [{'EXIT',<0.748.0>,normal}]
+    links: [<0.746.0>,<0.31.0>]
+    dictionary: []
+    trap_exit: true
+    status: running
+    heap_size: 987
+    stack_size: 27
+    reductions: 99
+  neighbours:
+2017-05-01 19:28:57 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Logger.Supervisor'}
+     Context:    child_terminated
+     Reason:     normal
+     Offender:   [{pid,<0.161.0>},{id,'Elixir.Logger.ErrorHandler'},{mfargs,{'Elixir.Logger.Watcher',watcher,[error_logger,'Elixir.Logger.ErrorHandler',{true,false,500}]}},{restart_type,permanent},{shutdown,5000},{child_type,worker}]
+
+2017-05-01 19:30:52 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Logger.Supervisor'}
+     Context:    child_terminated
+     Reason:     normal
+     Offender:   [{pid,<0.215.0>},{id,'Elixir.Logger.ErrorHandler'},{mfargs,{'Elixir.Logger.Watcher',watcher,[error_logger,'Elixir.Logger.ErrorHandler',{true,false,500}]}},{restart_type,permanent},{shutdown,5000},{child_type,worker}]
+
