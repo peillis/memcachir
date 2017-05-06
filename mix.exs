@@ -35,7 +35,7 @@ defmodule Memcachir.Mixfile do
   defp deps do
     [{:dialyxir, "~> 0.5", only: :dev, runtime: false},
      {:ex_doc, "~> 0.15", only: :dev},
-     {:mcd, github: "EchoTeam/mcd", ref: "b5b4a32", app: false},
+     {:mcd, path: "mcd", app: false},
      {:poolboy, "~> 1.5"}]
   end
 end
