@@ -33,7 +33,8 @@ defmodule Memcachir.Mixfile do
 
   # Type "mix help deps" for more examples and options
   defp deps do
-    [{:dialyxir, "~> 0.5", only: :dev, runtime: false},
+    [{:benchfella, "~> 0.3.0", only: :dev},
+     {:dialyxir, "~> 0.5", only: :dev, runtime: false},
      {:ex_doc, "~> 0.15", only: :dev},
      {:mcd, path: "mcd", app: false},
      {:poolboy, "~> 1.5"}]
