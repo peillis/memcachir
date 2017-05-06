@@ -3,31 +3,26 @@ defmodule McdBench do
   use Benchfella
   import BenchUtils
 
-  before_each_bench _ do
-    { :ok, pid} = :mcd.start_link(['localhost', 11211])
-    :timer.sleep(100)
-    { :ok, "world" } = :mcd.set(pid, "hello", "world")
-    { :ok, pid }
+  setup_all do
+    {:ok, pid} = :mero_sup.start_link([{:default, [{:servers, [{'localhost', 11211}]}, {:sharding_algorithm, {:mero, :shard_crc32}}, {:workers_per_shard, 1}, {:pool_worker_module, :mero_wrk_tcp_binary}]}])
+    :timer.sleep(5000)
+    :ok = :mero.set(:default, "hello", "world", 0, 5000)
+    {:ok, "whatever"}
   end
 
   bench "GET" do
-    pid = bench_context
-    { :ok, "world" } = :mcd.get(pid, "hello")
+    {"hello", "world"} = :mero.get(:default, "hello")
   end
 
   bench "SET" do
-    pid = bench_context
-    { :ok, "world" } = :mcd.set(pid, "hello", "world")
+    :ok = :mero.set(:default, "hello", "world", 0, 5000)
   end
 
   bench "SET LARGE", [large_blob: random_string()] do
-    pid = bench_context
-    { :ok, _ } = :mcd.set(pid, "hello", large_blob)
-    { :ok }
+    :ok = :mero.set(:default, "hello", large_blob, 0, 5000)
   end
 
   bench "GET LARGE" do
-    pid = bench_context
-    { :ok, _ } = :mcd.get(pid, "hello")
+    :ok = :mero.get(:default, "hello")
   end
 end

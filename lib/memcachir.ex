@@ -21,7 +21,7 @@ defmodule Memcachir do
     hosts = Util.read_config_hosts(Application.get_env(:memcachir, :hosts))
     pool_options = Application.get_env(:memcachir, :pool, [])
 
-    Memcachir.Supervisor.start_link(hosts, pool_options)
+    # Memcachir.Supervisor.start_link(hosts, pool_options)
   end
 
   @doc """

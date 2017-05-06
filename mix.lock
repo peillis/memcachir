@@ -2,9 +2,12 @@
   "corman": {:git, "git://github.com/EchoTeam/corman.git", "1c1ae1c0aa97ed1976d9042ac9fb805b51214661", [branch: "master"]},
   "dht_ring": {:git, "git://github.com/EchoTeam/dht_ring.git", "d5b880ad76aefc81547dbb76b48a97a01d52ff41", [branch: "master"]},
   "dialyxir": {:hex, :dialyxir, "0.5.0", "5bc543f9c28ecd51b99cc1a685a3c2a1a93216990347f259406a910cf048d1d7", [:mix], []},
+  "dynamic_compile": {:git, "https://github.com/JacobVorreuter/dynamic_compile.git", "d13d29c03d321e154adffb8eaa4b88b154a811fd", [tag: "d13d29c"]},
   "earmark": {:hex, :earmark, "1.2.0", "bf1ce17aea43ab62f6943b97bd6e3dc032ce45d4f787504e3adf738e54b42f3a", [:mix], []},
   "ex_doc": {:hex, :ex_doc, "0.15.1", "d5f9d588fd802152516fccfdb96d6073753f77314fcfee892b15b6724ca0d596", [:mix], [{:earmark, "~> 1.1", [hex: :earmark, optional: false]}]},
   "goldrush": {:git, "git://github.com/DeadZen/goldrush.git", "1d883423ac360b3536ca52dc733a0164bacf3109", [tag: "0.1.5"]},
   "lager": {:git, "git://github.com/basho/lager.git", "ad400896af5b1ad8b4f7a4d34e609b5a990640bb", [tag: "2.0.1"]},
   "mcd": {:git, "https://github.com/EchoTeam/mcd.git", "b5b4a32ef2c9e2f6a4faa992536cb3da3548e0f8", [ref: "b5b4a32"]},
-  "poolboy": {:hex, :poolboy, "1.5.1", "6b46163901cfd0a1b43d692657ed9d7e599853b3b21b95ae5ae0a777cf9b6ca8", [:rebar], []}}
+  "mero": {:git, "https://github.com/AdRoll/mero.git", "5c5eca1ba6f80838ec61e62c198282f1b0dc7d09", []},
+  "poolboy": {:hex, :poolboy, "1.5.1", "6b46163901cfd0a1b43d692657ed9d7e599853b3b21b95ae5ae0a777cf9b6ca8", [:rebar], []},
+  "proc": {:git, "https://github.com/miriampena/proc.git", "300c0d8a7dd4f23e42d33d11affdb26c3bcfbd67", [tag: "v1.0.0"]}}
