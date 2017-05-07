@@ -8,6 +8,6 @@
   "goldrush": {:git, "git://github.com/DeadZen/goldrush.git", "1d883423ac360b3536ca52dc733a0164bacf3109", [tag: "0.1.5"]},
   "lager": {:git, "git://github.com/basho/lager.git", "ad400896af5b1ad8b4f7a4d34e609b5a990640bb", [tag: "2.0.1"]},
   "mcd": {:git, "https://github.com/EchoTeam/mcd.git", "b5b4a32ef2c9e2f6a4faa992536cb3da3548e0f8", [ref: "b5b4a32"]},
-  "mero": {:git, "https://github.com/AdRoll/mero.git", "5c5eca1ba6f80838ec61e62c198282f1b0dc7d09", []},
+  "mero": {:git, "https://github.com/AdRoll/mero.git", "5c5eca1ba6f80838ec61e62c198282f1b0dc7d09", [tag: "v1.0.7"]},
   "poolboy": {:hex, :poolboy, "1.5.1", "6b46163901cfd0a1b43d692657ed9d7e599853b3b21b95ae5ae0a777cf9b6ca8", [:rebar], []},
   "proc": {:git, "https://github.com/miriampena/proc.git", "300c0d8a7dd4f23e42d33d11affdb26c3bcfbd67", [tag: "v1.0.0"]}}

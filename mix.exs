@@ -37,7 +37,7 @@ defmodule Memcachir.Mixfile do
     [{:benchfella, "~> 0.3.0", only: :dev},
      {:dialyxir, "~> 0.5", only: :dev, runtime: false},
      {:ex_doc, "~> 0.15", only: :dev},
-     {:mero, github: "AdRoll/mero" },
+     {:mero, github: "AdRoll/mero", tag: "v1.0.7"},
      {:poolboy, "~> 1.5"}]
   end
 end

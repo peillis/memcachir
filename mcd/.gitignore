@@ -1,7 +1,0 @@
-/ebin
-/deps
-/logs
-/.eunit
-erl_crash.dump
-/test/*.beam
-*.swp
