@@ -14,13 +14,24 @@ defmodule Memcachir do
 
   alias Memcachir.Util
 
+  @timeout_write Application.get_env(:mero, :timeout_write, 5000)
+  @timeout_read Application.get_env(:mero, :timeout_read, 30)
+
   @doc """
   Starts application.
   """
   def start(_type, _args) do
-    hosts = Util.read_config_hosts(Application.get_env(:memcachir, :hosts))
+    servers = Util.read_config_hosts(Application.get_env(:memcachir, :hosts))
     pool_options = Application.get_env(:memcachir, :pool, [])
 
+    {:ok, pid} = :mero_sup.start_link([
+      {:default, [
+        {:servers, servers},
+        {:sharding_algorithm, {:mero, :shard_crc32}},
+        {:workers_per_shard, 1},
+        {:pool_worker_module, :mero_wrk_tcp_binary}
+      ]}
+    ])
     # Memcachir.Supervisor.start_link(hosts, pool_options)
   end
 
@@ -29,7 +40,7 @@ defmodule Memcachir do
   if the given key doesn't exist.
   """
   def get(key) do
-    execute(&:mcd.get/2, [key |> add_namespace])
+    :mero.get(:default, key |> add_namespace)
   end
 
   @doc """
@@ -43,43 +54,22 @@ defmodule Memcachir do
   Sets the key to value with a specified time to live.
   """
   def set(key, value, ttl) do
-    execute(&:mcd.do/4, [{:set, 0, ttl}, key |> add_namespace, value])
+    :mero.set(:default, key |> add_namespace, value, ttl, @timeout_write)
   end
 
   @doc """
   Removes the item with the specified key. Returns `{:ok, :deleted}`
   """
   def delete(key) do
-    execute(&:mcd.delete/2, [key |> add_namespace])
-  end
-
-  @doc """
-  Returns the version of the memcached server.
-  """
-  def version do
-    execute(&:mcd.version/1)
+    :mero.delete(:default, key |> add_namespace, @timeout_write)
   end
 
   @doc """
   Removes all the items from the server. Returns `{:ok, :flushed}`.
   """
   def flush do
-    execute(&:mcd.do/2, [:flush_all])
+    :mero.flush_all(:default)
   end
-
-  @doc """
-  To execute any function of the :mcd library.
-
-  ## Example
-
-      execute(&:mcd.do/2, [:flush_all])
-  """
-  def execute(fun, args \\ []) do
-    :poolboy.transaction(Memcachir.Pool, fn(worker) ->
-      apply(fun, [worker | args])
-    end)
-  end
-
 
   ## Private
 

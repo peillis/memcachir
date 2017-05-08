@@ -1,5 +1,4 @@
 use Mix.Config
 
-# config :memcachir,
-#   hosts: ["localhost:11211", "127.0.0.1:11212"],
-#   pool: [strategy: :fifo, size: 2]
+config :memcachir,
+  hosts: ["localhost:11211", "127.0.0.1:11212"]

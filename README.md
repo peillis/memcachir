@@ -28,7 +28,6 @@ The `hosts` config allows multiple variants:
 ```elixir
 hosts: "localhost:11212"  # specify port
 hosts: ["host1", "host2", "host3:11212"]  # cluster of servers
-hosts: [{"host1", 10}, {"host2", 30}]  # cluster with weights
 ```
 
 ## Configuration

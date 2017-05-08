@@ -5,11 +5,11 @@ defmodule Memcachir.UtilTest do
 
   test "read hosts configuration" do
     assert read_config_hosts("localhost") ==
-      [{:"localhost:11211", ['localhost', 11211], 10}]
+      [{'localhost', 11211}]
+    assert read_config_hosts("localhost:11212") ==
+      [{'localhost', 11212}]
     assert read_config_hosts(["localhost:1", "other:2"]) ==
-      [{:"localhost:1", ['localhost', 1], 10}, {:"other:2", ['other', 2], 10}]
-    assert read_config_hosts([{"localhost:1", 20}, {"other:2", 30}]) ==
-      [{:"localhost:1", ['localhost', 1], 20}, {:"other:2", ['other', 2], 30}]
+      [{'localhost', 1}, {'other', 2}]
   end
-  
+
 end

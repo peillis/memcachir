@@ -17,9 +17,8 @@ defmodule Memcachir.Mixfile do
 
   # Type "mix help compile.app" for more information
   def application do
-    # [mod: {Memcachir, []},
-    #  extra_applications: [:logger]]
-    []
+    [mod: {Memcachir, []},
+     extra_applications: [:logger]]
   end
 
   def description do
@@ -37,7 +36,7 @@ defmodule Memcachir.Mixfile do
     [{:benchfella, "~> 0.3.0", only: :dev},
      {:dialyxir, "~> 0.5", only: :dev, runtime: false},
      {:ex_doc, "~> 0.15", only: :dev},
-     {:mero, github: "AdRoll/mero", tag: "v1.0.7"},
+     {:mero, github: "AdRoll/mero", tag: "v1.0.7", app: false},
      {:poolboy, "~> 1.5"}]
   end
 end
