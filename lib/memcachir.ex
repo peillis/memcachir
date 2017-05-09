@@ -14,7 +14,6 @@ defmodule Memcachir do
 
   alias Memcachir.Util
 
-
   @doc """
   Starts application.
   """
