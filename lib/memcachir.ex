@@ -29,33 +29,13 @@ defmodule Memcachir do
         Util.read_config_elasticache(elasticache)
     end
 
-    workers_per_shard =
-      Application.get_env(:memcachir, :workers_per_shard, 1)
-    initial_connections_per_pool =
-      Application.get_env(:memcachir, :initial_connections_per_pool)
-    min_free_connections_per_pool =
-      Application.get_env(:memcachir, :min_free_connections_per_pool)
-    max_connections_per_pool =
-      Application.get_env(:memcachir, :max_connections_per_pool)
-
-    if initial_connections_per_pool do
-      Application.put_env(:mero, :initial_connections_per_pool,
-                          initial_connections_per_pool)
-    end
-    if min_free_connections_per_pool do
-      Application.put_env(:mero, :min_free_connections_per_pool,
-                          min_free_connections_per_pool)
-    end
-    if max_connections_per_pool do
-      Application.put_env(:mero, :max_connections_per_pool,
-                          max_connections_per_pool)
-    end
+    set_mero_env()
 
     {:ok, _pid} = :mero_sup.start_link([
       {:default, [
         {:servers, servers},
         {:sharding_algorithm, {:mero, :shard_crc32}},
-        {:workers_per_shard, workers_per_shard},
+        {:workers_per_shard, Application.get_env(:mero, :workers_per_shard)},
         {:pool_worker_module, :mero_wrk_tcp_binary}
       ]}
     ])
@@ -119,6 +99,26 @@ defmodule Memcachir do
 
   defp default_ttl do
     Application.get_env(:memcachir, :ttl, 0)
+  end
+
+  defp set_mero_env do
+    Application.put_env(:mero, :workers_per_shard,
+      Application.get_env(:memcachir, :workers_per_shard, 1))
+    Application.put_env(:mero, :initial_connections_per_pool,
+      Application.get_env(:memcachir, :initial_connections_per_pool, 20))
+    Application.put_env(:mero, :min_free_connections_per_pool,
+      Application.get_env(:memcachir, :min_free_connections_per_pool, 10))
+    Application.put_env(:mero, :max_connections_per_pool,
+      Application.get_env(:memcachir, :max_connections_per_pool, 50))
+
+    Application.put_env(:mero, :timeout_read, 30)
+    Application.put_env(:mero, :timeout_write, 5000)
+    Application.put_env(:mero, :write_retries, 3)
+    Application.put_env(:mero, :expiration_time, 86_400)
+    Application.put_env(:mero, :connection_unused_max_time, 300_000)
+    Application.put_env(:mero, :expiration_interval, 300_000)
+    Application.put_env(:mero, :max_connection_delay_time, 5000)
+    Application.put_env(:mero, :stat_event_callback, {:mero_stat, :noop})
   end
 
 end
