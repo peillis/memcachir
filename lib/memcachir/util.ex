@@ -16,6 +16,16 @@ defmodule Memcachir.Util do
     raise_error()
   end
 
+  @doc """
+  Reads the elasticache configuration.
+  """
+  def read_config_elasticache(elasticache) when is_binary(elasticache) do
+    parse_hostname(elasticache) |> Tuple.insert_at(0, :elasticache)
+  end
+  def read_config_elasticache(_) do
+    raise_error()
+  end
+
   defp parse_hostname(hostname) do
     case String.split(hostname, ":") do
       [hostname, port] ->
@@ -27,7 +37,7 @@ defmodule Memcachir.Util do
   end
 
   defp raise_error do
-    raise ArgumentError, message: "invalid hosts configuration"
+    raise ArgumentError, message: "invalid configuration"
   end
 
 end

@@ -21,8 +21,15 @@ defmodule Memcachir do
   Starts application.
   """
   def start(_type, _args) do
-    servers = Util.read_config_hosts(Application.get_env(:memcachir, :hosts))
-    workers_per_shard = Application.get_env(:memcachir, :workers_per_shard, 1)
+
+    servers = case Application.get_env(:memcachir, :elasticache) do
+      nil ->
+        Util.read_config_hosts(Application.get_env(:memcachir, :hosts))
+      elasticache ->
+        Util.read_config_elasticache(elasticache)
+    end
+    workers_per_shard =
+      Application.get_env(:memcachir, :workers_per_shard, 1)
     initial_connections_per_pool =
       Application.get_env(:memcachir, :initial_connections_per_pool)
     min_free_connections_per_pool =
