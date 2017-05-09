@@ -28,6 +28,7 @@ defmodule Memcachir do
       elasticache ->
         Util.read_config_elasticache(elasticache)
     end
+    
     workers_per_shard =
       Application.get_env(:memcachir, :workers_per_shard, 1)
     initial_connections_per_pool =

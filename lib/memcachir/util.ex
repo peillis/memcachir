@@ -20,7 +20,7 @@ defmodule Memcachir.Util do
   Reads the elasticache configuration.
   """
   def read_config_elasticache(elasticache) when is_binary(elasticache) do
-    parse_hostname(elasticache) |> Tuple.insert_at(0, :elasticache)
+    {:ok, hosts, _version} = Elasticachex.get_cluster_info(elasticache)
   end
   def read_config_elasticache(_) do
     raise_error()
