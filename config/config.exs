@@ -1,12 +1,7 @@
 use Mix.Config
 
 config :mero,
-  cluster_config:
-    [{:default,
-      [{:servers, [{'localhost', 11211}]},
-       {:sharding_algorithm, {:mero, :shard_crc32}},
-       {:workers_per_shard, 1},
-       {:pool_worker_module, :mero_wrk_tcp_binary}]}],
+  workers_per_shard: 1,
   initial_connections_per_pool: 20,
   min_free_connections_per_pool: 10,
   max_connections_per_pool: 50,
