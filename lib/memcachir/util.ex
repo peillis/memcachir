@@ -1,4 +1,7 @@
 defmodule Memcachir.Util do
+  @moduledoc """
+  Utilities to read configuration.
+  """
 
   @doc """
   Reads the hosts configuration.
@@ -32,7 +35,7 @@ defmodule Memcachir.Util do
       [hostname, port] ->
         {String.to_charlist(hostname), String.to_integer(port)}
       [hostname] ->
-        {String.to_charlist(hostname), 11211}
+        {String.to_charlist(hostname), 11_211}
       _ -> raise_error()
     end
   end

@@ -28,7 +28,7 @@ defmodule Memcachir do
       elasticache ->
         Util.read_config_elasticache(elasticache)
     end
-    
+
     workers_per_shard =
       Application.get_env(:memcachir, :workers_per_shard, 1)
     initial_connections_per_pool =
@@ -84,7 +84,8 @@ defmodule Memcachir do
   Sets the key to value with a specified time to live.
   """
   def set(key, value, ttl) do
-    case :mero.set(:default, key |> add_namespace, value, ttl, @timeout_write) do
+    nkey = key |> add_namespace
+    case :mero.set(:default, nkey, value, ttl, @timeout_write) do
       {:error, reason} -> {:error, reason}
       :ok -> {:ok, value}
     end
