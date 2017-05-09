@@ -2,7 +2,10 @@
 
 [![Build Status](https://secure.travis-ci.org/peillis/memcachir.png)](http://travis-ci.org/peillis/memcachir)
 
-Memcached client for Elixir
+Memcached client for Elixir.
+
+It's basically an elixir wrapper of the [mero](https://github.com/AdRoll/mero)
+Erlang library.
 
 ## Installation
 
@@ -41,10 +44,10 @@ config :memcachir,
   ttl: 0,
   namespace: nil,
   # connection pool options
-  pool: [
-    strategy: :lifo,
-    size: 10,
-    max_overflow: 10]
+  workers_per_shard: 1,
+  initial_connections_per_pool: 20,
+  min_free_connections_per_pool: 10,
+  max_connections_per_pool: 50
 ```
 
 ## Example

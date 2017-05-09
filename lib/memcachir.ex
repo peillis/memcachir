@@ -22,17 +22,35 @@ defmodule Memcachir do
   """
   def start(_type, _args) do
     servers = Util.read_config_hosts(Application.get_env(:memcachir, :hosts))
-    pool_options = Application.get_env(:memcachir, :pool, [])
+    workers_per_shard = Application.get_env(:memcachir, :workers_per_shard, 1)
+    initial_connections_per_pool =
+      Application.get_env(:memcachir, :initial_connections_per_pool)
+    min_free_connections_per_pool =
+      Application.get_env(:memcachir, :min_free_connections_per_pool)
+    max_connections_per_pool =
+      Application.get_env(:memcachir, :max_connections_per_pool)
+
+    if initial_connections_per_pool do
+      Application.put_env(:mero, :initial_connections_per_pool,
+                          initial_connections_per_pool)
+    end
+    if min_free_connections_per_pool do
+      Application.put_env(:mero, :min_free_connections_per_pool,
+                          min_free_connections_per_pool)
+    end
+    if max_connections_per_pool do
+      Application.put_env(:mero, :max_connections_per_pool,
+                          max_connections_per_pool)
+    end
 
     {:ok, _pid} = :mero_sup.start_link([
       {:default, [
         {:servers, servers},
         {:sharding_algorithm, {:mero, :shard_crc32}},
-        {:workers_per_shard, 1},
+        {:workers_per_shard, workers_per_shard},
         {:pool_worker_module, :mero_wrk_tcp_binary}
       ]}
     ])
-    # Memcachir.Supervisor.start_link(hosts, pool_options)
   end
 
   @doc """
