@@ -21,6 +21,7 @@ defmodule Memcachir.Util do
   """
   def read_config_elasticache(elasticache) when is_binary(elasticache) do
     {:ok, hosts, _version} = Elasticachex.get_cluster_info(elasticache)
+    read_config_hosts(hosts)
   end
   def read_config_elasticache(_) do
     raise_error()
