@@ -24,7 +24,7 @@ defmodule Memcachir do
     servers = Util.read_config_hosts(Application.get_env(:memcachir, :hosts))
     pool_options = Application.get_env(:memcachir, :pool, [])
 
-    {:ok, pid} = :mero_sup.start_link([
+    {:ok, _pid} = :mero_sup.start_link([
       {:default, [
         {:servers, servers},
         {:sharding_algorithm, {:mero, :shard_crc32}},
@@ -40,7 +40,11 @@ defmodule Memcachir do
   if the given key doesn't exist.
   """
   def get(key) do
-    :mero.get(:default, key |> add_namespace)
+    case :mero.get(:default, key |> add_namespace, @timeout_read) do
+      {:error, reason} -> {:error, reason}
+      {_, :undefined}  -> {:error, :not_found}
+      {_, value}       -> {:ok, value}
+    end
   end
 
   @doc """
@@ -54,14 +58,20 @@ defmodule Memcachir do
   Sets the key to value with a specified time to live.
   """
   def set(key, value, ttl) do
-    :mero.set(:default, key |> add_namespace, value, ttl, @timeout_write)
+    case :mero.set(:default, key |> add_namespace, value, ttl, @timeout_write) do
+      {:error, reason} -> {:error, reason}
+      :ok -> {:ok, value}
+    end
   end
 
   @doc """
   Removes the item with the specified key. Returns `{:ok, :deleted}`
   """
   def delete(key) do
-    :mero.delete(:default, key |> add_namespace, @timeout_write)
+    case :mero.delete(:default, key |> add_namespace, @timeout_write) do
+      {:error, reason} -> {:error, reason}
+      :ok -> {:ok, :deleted}
+    end
   end
 
   @doc """

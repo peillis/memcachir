@@ -4,9 +4,7 @@ defmodule Memcachir.Util do
   Reads the hosts configuration.
   """
   def read_config_hosts(hosts) when is_list(hosts) do
-    Enum.map(hosts, fn(host) ->
-      parse_hostname(host)
-    end)
+    Enum.map(hosts, &parse_hostname/1)
   end
   def read_config_hosts(hosts) when is_binary(hosts) do
     read_config_hosts([hosts])

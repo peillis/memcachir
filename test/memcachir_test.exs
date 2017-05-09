@@ -1,8 +1,12 @@
 defmodule MemcachirTest do
   use ExUnit.Case
 
+  setup_all do
+    :timer.sleep(5000)
+  end
+
   setup do
-    assert {:ok, :flushed} == Memcachir.flush()
+    assert [default: :ok] == Memcachir.flush()
     Application.delete_env(:memcachir, :namespace)
     Application.delete_env(:memcachir, :ttl)
     :ok
@@ -17,28 +21,26 @@ defmodule MemcachirTest do
     assert {:ok, "world"} == Memcachir.set("hello", "world", 2)
     assert {:ok, "world"} == Memcachir.get("hello")
     :timer.sleep(2000)
-    assert {:error, :notfound} == Memcachir.get("hello")
+    assert {:error, :not_found} == Memcachir.get("hello")
   end
 
   test "delete" do
     assert {:ok, "world"} == Memcachir.set("hello", "world")
     assert {:ok, :deleted} == Memcachir.delete("hello")
-    assert {:error, :notfound} == Memcachir.get("hello")
+    assert {:error, :not_found} == Memcachir.get("hello")
   end
 
   test "flush" do
     assert {:ok, "world"} == Memcachir.set("hello", "world")
-    assert {:ok, :flushed} == Memcachir.flush()
-    assert {:error, :notfound} == Memcachir.get("hello")
+    assert [default: :ok] == Memcachir.flush()
+    assert {:error, :not_found} == Memcachir.get("hello")
   end
 
   test "config namespace" do
     Application.put_env(:memcachir, :namespace, "test")
     assert {:ok, "world"} == Memcachir.set("hello", "world")
     assert {:ok, "world"} == Memcachir.get("hello")
-    pid = :poolboy.checkout(Memcachir.Pool)
-    assert {:ok, "world"} == :mcd.get(pid, "test:hello")
-    :ok = :poolboy.checkin(Memcachir.Pool, pid)
+    assert {"test:hello", "world"} == :mero.get(:default, "test:hello")
   end
 
   test "config ttl" do
@@ -46,7 +48,7 @@ defmodule MemcachirTest do
     assert {:ok, "world"} == Memcachir.set("hello", "world")
     assert {:ok, "world"} == Memcachir.get("hello")
     :timer.sleep(2000)
-    assert {:error, :notfound} == Memcachir.get("hello")
+    assert {:error, :not_found} == Memcachir.get("hello")
   end
 
 end
