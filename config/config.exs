@@ -2,6 +2,8 @@ use Mix.Config
 
 config :mero,
   workers_per_shard: 1,
+  pool_worker_module: :mero_wrk_tcp_binary,
+  sharding_algorithm: {:mero, :shard_crc32},
   initial_connections_per_pool: 20,
   min_free_connections_per_pool: 10,
   max_connections_per_pool: 50,

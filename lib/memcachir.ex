@@ -29,9 +29,11 @@ defmodule Memcachir do
     {:ok, _pid} = :mero_sup.start_link([
       {:default, [
         {:servers, servers},
-        {:sharding_algorithm, {:mero, :shard_crc32}},
+        {:sharding_algorithm, Application.get_env(:mero, :sharding_algorithm,
+            {:mero, :shard_crc32})},
         {:workers_per_shard, Application.get_env(:mero, :workers_per_shard, 1)},
-        {:pool_worker_module, :mero_wrk_tcp_binary}
+        {:pool_worker_module, Application.get_env(:mero, :pool_worker_module,
+            :mero_wrk_tcp_binary)}
       ]}
     ])
   end
