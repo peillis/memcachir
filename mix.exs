@@ -1,7 +1,7 @@
 defmodule Memcachir.Mixfile do
   use Mix.Project
 
-  @version "2.0.0"
+  @version "3.0.0"
 
   def project do
     [app: :memcachir,
@@ -38,7 +38,7 @@ defmodule Memcachir.Mixfile do
      {:dialyxir, "~> 0.5", only: :dev, runtime: false},
      {:elasticachex, "~> 1.0"},
      {:ex_doc, "~> 0.15", only: :dev},
-     {:mero, github: "AdRoll/mero", tag: "v1.0.7", app: false},
+     {:memcachex, "~> 0.4"},
      {:poolboy, "~> 1.5"}]
   end
 end

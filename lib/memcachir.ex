@@ -14,91 +14,65 @@ defmodule Memcachir do
 
   alias Memcachir.Util
 
+  require IEx
   @doc """
   Starts application.
   """
   def start(_type, _args) do
+    servers =
+      case Application.get_env(:memcachir, :elasticache) do
+        nil ->
+          Util.read_config_hosts(Application.get_env(:memcachir, :hosts))
+        elasticache ->
+          Util.read_config_elasticache(elasticache)
+      end
 
-    servers = case Application.get_env(:memcachir, :elasticache) do
-      nil ->
-        Util.read_config_hosts(Application.get_env(:memcachir, :hosts))
-      elasticache ->
-        Util.read_config_elasticache(elasticache)
+    if length(servers) > 1 do
+      raise ArgumentError, message: "multiple hosts not yet allowed"
     end
 
-    {:ok, _pid} = :mero_sup.start_link([
-      {:default, [
-        {:servers, servers},
-        {:sharding_algorithm, Application.get_env(:mero, :sharding_algorithm,
-            {:mero, :shard_crc32})},
-        {:workers_per_shard, Application.get_env(:mero, :workers_per_shard, 1)},
-        {:pool_worker_module, Application.get_env(:mero, :pool_worker_module,
-            :mero_wrk_tcp_binary)}
-      ]}
-    ])
+    [{hostname, port}] = servers
+    options =
+      Application.get_all_env(:memcachir)
+      |> Keyword.put(:hostname, hostname)
+      |> Keyword.put(:port, port)
+    pool_options = Application.get_env(:memcachir, :pool, [])
+
+    Memcachir.Supervisor.start_link(options, pool_options)
   end
 
   @doc """
-  Gets the value associated with the key. Returns `{:error, :notfound}`
+  Gets the value associated with the key. Returns `{:error, "Key not found"}`
   if the given key doesn't exist.
   """
-  def get(key) do
-    case :mero.get(:default, key |> add_namespace, timeout_read()) do
-      {:error, reason} -> {:error, reason}
-      {_, :undefined}  -> {:error, :not_found}
-      {_, value}       -> {:ok, value}
-    end
+  def get(key, opts \\ []) do
+    execute(&Memcache.get/3, [key, opts])
   end
 
   @doc """
   Sets the key to value.
   """
-  def set(key, value) do
-    set(key, value, default_ttl())
-  end
-
-  @doc """
-  Sets the key to value with a specified time to live.
-  """
-  def set(key, value, ttl) do
-    nkey = key |> add_namespace
-    case :mero.set(:default, nkey, value, ttl, timeout_write()) do
-      {:error, reason} -> {:error, reason}
-      :ok -> {:ok, value}
-    end
+  def set(key, value, opts \\ []) do
+    execute(&Memcache.set/4, [key, value, opts])
   end
 
   @doc """
   Removes the item with the specified key. Returns `{:ok, :deleted}`
   """
   def delete(key) do
-    case :mero.delete(:default, key |> add_namespace, timeout_write()) do
-      {:error, reason} -> {:error, reason}
-      :ok -> {:ok, :deleted}
-    end
+    execute(&Memcache.delete/2, [key])
   end
 
   @doc """
   Removes all the items from the server. Returns `{:ok, :flushed}`.
   """
-  def flush do
-    :mero.flush_all(:default)
+  def flush(opts \\ []) do
+    execute(&Memcache.flush/2, [opts])
   end
 
-  ## Private
-
-  defp add_namespace(key) do
-    case Application.get_env(:memcachir, :namespace) do
-      nil -> key
-      namespace -> "#{namespace}:#{key}"
-    end
+  def execute(fun, args \\ []) do
+    :poolboy.transaction(Memcachir.Pool, fn(worker) ->
+      apply(fun, [worker | args])
+    end)
   end
-
-  defp default_ttl do
-    Application.get_env(:memcachir, :ttl, 0)
-  end
-
-  defp timeout_read, do: Application.get_env(:mero, :timeout_read, 30)
-  defp timeout_write, do: Application.get_env(:mero, :timeout_write, 5000)
-
 end

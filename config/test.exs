@@ -1,4 +1,6 @@
 use Mix.Config
 
 config :memcachir,
-  hosts: "localhost"
+  hosts: "localhost",
+  pool: [
+    size: 1]
