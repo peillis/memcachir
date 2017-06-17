@@ -18,7 +18,7 @@ defmodule Memcachir.Mixfile do
   # Type "mix help compile.app" for more information
   def application do
     [mod: {Memcachir, []},
-     extra_applications: [:logger]]
+     extra_applications: [:logger, :libring]]
   end
 
   def description do
@@ -38,6 +38,7 @@ defmodule Memcachir.Mixfile do
      {:dialyxir, "~> 0.5", only: :dev, runtime: false},
      {:elasticachex, "~> 1.0"},
      {:ex_doc, "~> 0.15", only: :dev},
+     {:libring, "~> 1.0"},
      {:memcachex, "~> 0.4"},
      {:poolboy, "~> 1.5"}]
   end

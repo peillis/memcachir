@@ -1,5 +1,11 @@
 # Change Log
 
+## v3.0.0
+
+  * Clusters working with libring.
+  * Elixir v1.4.4
+  * Back to memcachex.
+
 ## v2.0.0
 
   * Complete rewrite using the [mcd](https://github.com/EchoTeam/mcd) erlang
