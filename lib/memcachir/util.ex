@@ -44,4 +44,11 @@ defmodule Memcachir.Util do
     raise ArgumentError, message: "invalid configuration"
   end
 
+  @doc """
+  Returns an atom based on hostname and port
+  """
+  def host_to_atom(hostname, port) do
+    String.to_atom("#{hostname}_#{port}")
+  end
+
 end
