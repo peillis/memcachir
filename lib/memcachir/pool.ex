@@ -4,13 +4,14 @@ defmodule Memcachir.Pool do
     strategy: :lifo,
     size: 10,
     max_overflow: 10,
-    worker_module: Memcachir.Worker,
-    name: {:local, __MODULE__}
+    worker_module: Memcachir.Worker
   ]
 
-  def start_link(hosts, opts) do
-    pool_options = @default_opts |> Keyword.merge(opts)
-    :poolboy.start_link(pool_options, hosts)
+  def start_link(options, pool_options) do
+    pool_options =
+      @default_opts
+      |> Keyword.merge(pool_options)
+    :poolboy.start_link(pool_options, options)
   end
 
 end
