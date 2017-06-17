@@ -52,7 +52,7 @@ config :memcachir,
 
 ```elixir
 iex> Memcachir.set("hello", "world")
-{:ok, "world"}
+{:ok}
 iex> Memcachir.get("hello")
 {:ok, "world"}
 ```
