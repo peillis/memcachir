@@ -34,7 +34,8 @@ hosts: [{"host1", 10}, {"host2", 30}]  # cluster with weights
 Alternatively you can use the elasticache config option:
 
 ```elixir
-elasticache: "your-config-endpoint.cache.amazonaws.com"
+config :memcachir,
+  elasticache: "your-config-endpoint.cache.amazonaws.com"
 ```
 
 ## Configuration
