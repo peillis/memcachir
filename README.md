@@ -2,7 +2,7 @@
 
 [![Build Status](https://secure.travis-ci.org/peillis/memcachir.png)](http://travis-ci.org/peillis/memcachir)
 
-Memcached client for Elixir
+Memcached client for Elixir. It supports clusters and AWS Elasticache.
 
 ## Installation
 
@@ -29,6 +29,12 @@ The `hosts` config allows multiple variants:
 hosts: "localhost:11212"  # specify port
 hosts: ["host1", "host2", "host3:11212"]  # cluster of servers
 hosts: [{"host1", 10}, {"host2", 30}]  # cluster with weights
+```
+
+Alternatively you can use the elasticache config option:
+
+```elixir
+elasticache: "your-config-endpoint.cache.amazonaws.com"
 ```
 
 ## Configuration
