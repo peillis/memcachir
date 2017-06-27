@@ -38,7 +38,7 @@ defmodule Memcachir.Mixfile do
      {:dialyxir, "~> 0.5", only: :dev, runtime: false},
      {:elasticachex, "~> 1.0"},
      {:ex_doc, "~> 0.15", only: :dev},
-     {:libring, "~> 1.0"},
+     {:libring, "~> 1.1"},
      {:memcachex, "~> 0.4"},
      {:poolboy, "~> 1.5"}]
   end

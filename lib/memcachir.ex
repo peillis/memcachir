@@ -64,7 +64,7 @@ defmodule Memcachir do
   Removes all the items from the server. Returns `{:ok}`.
   """
   def flush(opts \\ []) do
-    nodes = servers_atoms()
+    nodes = HashRing.Managed.nodes(:memcachir_ring)
     execute(&Memcache.flush/2, nodes, [opts])
   end
 
@@ -83,13 +83,6 @@ defmodule Memcachir do
 
   defp key_to_node(key) do
     HashRing.Managed.key_to_node(:memcachir_ring, key)
-  end
-
-  # Returns a list like [:localhost_11211, :localhost_11212]
-  defp servers_atoms() do
-    Enum.map(get_servers(), fn({host, port}) ->
-      Util.host_to_atom(host, port)
-    end)
   end
 
   # Returns a list like [{host1, port1}, {host2, port2}, ...]

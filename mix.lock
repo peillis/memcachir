@@ -11,7 +11,7 @@
   "ex_doc": {:hex, :ex_doc, "0.15.1", "d5f9d588fd802152516fccfdb96d6073753f77314fcfee892b15b6724ca0d596", [:mix], [{:earmark, "~> 1.1", [hex: :earmark, repo: "hexpm", optional: false]}], "hexpm"},
   "goldrush": {:git, "git://github.com/DeadZen/goldrush.git", "1d883423ac360b3536ca52dc733a0164bacf3109", [tag: "0.1.5"]},
   "lager": {:git, "git://github.com/basho/lager.git", "ad400896af5b1ad8b4f7a4d34e609b5a990640bb", [tag: "2.0.1"]},
-  "libring": {:hex, :libring, "1.0.2", "95986f0aad553a340f34b898d146474c7a76fdf6e608ad9e0626e07514d8cdf4", [:mix], [], "hexpm"},
+  "libring": {:hex, :libring, "1.1.0", "88dd0829ab1f26169282678756dd92add7847a39980554f4b421c54a0a92515d", [:mix], [], "hexpm"},
   "mcd": {:git, "https://github.com/EchoTeam/mcd.git", "b5b4a32ef2c9e2f6a4faa992536cb3da3548e0f8", [ref: "b5b4a32"]},
   "memcachex": {:hex, :memcachex, "0.4.1", "12fe48370a5725fff790e1cdc0aa9ce2c28f685ad534bfbad5ef2302ee5003b6", [:mix], [{:connection, "~> 1.0.3", [hex: :connection, repo: "hexpm", optional: false]}, {:poison, "~> 1.5 or ~> 2.0", [hex: :poison, repo: "hexpm", optional: true]}], "hexpm"},
   "mero": {:git, "https://github.com/AdRoll/mero.git", "5c5eca1ba6f80838ec61e62c198282f1b0dc7d09", [tag: "v1.0.7"]},

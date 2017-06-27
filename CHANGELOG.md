@@ -1,5 +1,7 @@
 # Change Log
 
+  * Upgrade libring to v1.1.0
+
 ## v3.0.0
 
   * Clusters working with libring.
