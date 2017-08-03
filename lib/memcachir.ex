@@ -41,7 +41,7 @@ defmodule Memcachir do
   """
   def get(key, opts \\ []) do
     node = key_to_node(key)
-    execute(&Memcache.get/3, node, [key, opts])
+    execute(:get, &Memcache.get/3, node, [key, opts])
   end
 
   @doc """
@@ -49,7 +49,7 @@ defmodule Memcachir do
   """
   def set(key, value, opts \\ []) do
     node = key_to_node(key)
-    execute(&Memcache.set/4, node, [key, value, opts])
+    execute(:set, &Memcache.set/4, node, [key, value, opts])
   end
 
   @doc """
@@ -57,7 +57,7 @@ defmodule Memcachir do
   """
   def delete(key) do
     node = key_to_node(key)
-    execute(&Memcache.delete/2, node, [key])
+    execute(:delete, &Memcache.delete/2, node, [key])
   end
 
   @doc """
@@ -65,19 +65,19 @@ defmodule Memcachir do
   """
   def flush(opts \\ []) do
     nodes = HashRing.Managed.nodes(:memcachir_ring)
-    execute(&Memcache.flush/2, nodes, [opts])
+    execute(:flush, &Memcache.flush/2, nodes, [opts])
   end
 
-  def execute(fun, nodes, args \\ [])
-  def execute(fun, [node | nodes], args) do
+  def execute(operation, fun, nodes, args \\ [])
+  def execute(operation, fun, [node | nodes], args) do
     if length(nodes) > 0 do
-      execute(fun, nodes, args)
+      execute(operation, fun, nodes, args)
     end
-    execute(fun, node, args)
+    execute(operation, fun, node, args)
   end
-  def execute(fun, node, args) do
+  def execute(operation, fun, node, args) do
     :poolboy.transaction(node, fn(worker) ->
-      apply(fun, [worker | args])
+      Stats.timing("memcachir_#{operation}", fn -> apply(fun, [worker | args]) end)
     end)
   end
 

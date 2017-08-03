@@ -40,6 +40,7 @@ defmodule Memcachir.Mixfile do
      {:ex_doc, "~> 0.15", only: :dev},
      {:libring, "~> 1.1"},
      {:memcachex, "~> 0.4"},
-     {:poolboy, "~> 1.5"}]
+     {:poolboy, "~> 1.5"},
+     {:ex_statsd, github: "PagerDuty/ex_statsd", branch: "keep-socket-open"}]
   end
 end
