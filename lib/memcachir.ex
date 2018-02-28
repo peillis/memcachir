@@ -99,7 +99,16 @@ defmodule Memcachir do
     end)
   end
 
-  defp exec_parallel(fun, grouped, args \\ [], merge_fun \\ &Map.merge/2) do
+  @doc """
+  Accepts a memcache operation closure, a grouped map of %{node => args} and executes
+  the operations in parallel for all given nodes.  The result is of form {:ok, enumerable}
+  where enumerable is the merged result of all operations.
+
+  Additionally, you can pass `args` to supply memcache ops to each of the executions
+  and `merge_fun` (a 2-arity func) which configures how the result is merged into the final result set.
+  For instance, `mget/2` returns a map of key, val pairs in its result, and utilizes `Map.merge/2`.
+  """
+  def exec_parallel(fun, grouped, args \\ [], merge_fun \\ &Map.merge/2) do
     grouped
     |> Enum.map(fn {node, val} -> Task.async(fn -> execute(fun, node, [val | args]) end) end)
     |> Enum.map(&Task.await/1)
