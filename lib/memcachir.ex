@@ -36,7 +36,7 @@ defmodule Memcachir do
   """
   def mget(keys, opts \\ []) do
     grouped_keys = Enum.group_by(keys, &key_to_node/1)
-    exec_parallel(&Memcache.multi_get/3, grouped_keys, opts)
+    exec_parallel(&Memcache.multi_get/3, grouped_keys, [opts])
   end
 
   @doc """
@@ -45,7 +45,7 @@ defmodule Memcachir do
   """
   def mset(commands, opts \\ []) do
     grouped_keys = Enum.group_by(commands, &key_to_node(elem(&1, 0)))
-    exec_parallel(&Memcache.multi_set/3, grouped_keys, opts, &Enum.concat/2)
+    exec_parallel(&Memcache.multi_set/3, grouped_keys, [opts], &Enum.concat/2)
   end
 
   @doc """
