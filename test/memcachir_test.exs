@@ -1,24 +1,12 @@
 defmodule MemcachirTest do
   use ExUnit.Case, async: false
 
-  alias Memcachir.ClusterSupervisor
-
-
-  setup_all do
-    if Process.whereis(Memcachir.ClusterSupervisor) do
-      GenServer.stop(Memcachir.ClusterSupervisor)
-    end
-
-    opts = [
-      hosts: ["localhost:11211"],
-      pool: [size: 2]
-    ]
-    {:ok, _} = ClusterSupervisor.start_link(opts)
-
-    :ok
-  end
 
   setup do
+    assert :ok == Application.stop(:memcachir)
+    Application.delete_env(:memcachir, :elasticache)
+    Application.put_env(:memcachir, :hosts, "localhost:11211")
+    assert :ok == Application.start(:memcachir)
     assert {:ok} == Memcachir.flush()
     :ok
   end

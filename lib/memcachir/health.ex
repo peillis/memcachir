@@ -10,7 +10,11 @@ defmodule Memcachir.HealthCheck do
   end
 
   def init(options) do
-    schedule_health_check(options)
+    # only poll if using ElastiCache
+    if Keyword.has_key?(options, :elasticache) do
+      schedule_health_check(options)
+    end
+
     {:ok, options}
   end
 

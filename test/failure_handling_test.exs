@@ -1,27 +1,23 @@
 defmodule FailureHandlingTest do
   use ExUnit.Case, async: false
 
-  alias Memcachir.{Cluster, ClusterSupervisor}
+  alias Memcachir.Cluster
+
 
   @cluster ["localhost|localhost|11211", "localhost|127.0.0.1|11211"]
 
-  setup_all do
-    if Process.whereis(Memcachir.ClusterSupervisor) do
-      GenServer.stop(Memcachir.ClusterSupervisor)
-    end
 
-    opts = [
-      elasticache: "localhost:11211",
-      pool: [size: 2]
-    ]
-    {:ok, _} = ClusterSupervisor.start_link(opts)
-
+  setup do
+    assert :ok == Application.stop(:memcachir)
+    Application.delete_env(:memcachir, :hosts)
+    Application.put_env(:memcachir, :elasticache, "localhost:11211")
+    assert :ok == Application.start(:memcachir)
     :ok
   end
 
 
   test "survive ElastiCache failure" do
-    # not initializing any servers
+    MockSocketModule.update([])
 
     assert {:error, "unable to set: no_nodes"} == Memcachir.set("hello", "world")
     assert {:error, "unable to delete: no_nodes"} == Memcachir.delete("hello")
@@ -37,7 +33,7 @@ defmodule FailureHandlingTest do
     MockSocketModule.update(@cluster)
     Memcachir.set("hello", "world")
 
-    # one node removed
+    # one node is removed
 
     [_ | other_servers] = @cluster
     MockSocketModule.update(other_servers)
@@ -45,7 +41,7 @@ defmodule FailureHandlingTest do
     assert [{'127.0.0.1', 11211}] == Cluster.servers()
     assert {:ok, "world"} == Memcachir.get("hello")
 
-    # one node added
+    # one node is added
 
     MockSocketModule.update(@cluster)
 

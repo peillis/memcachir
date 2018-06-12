@@ -4,7 +4,7 @@ defmodule Memcachir.ClusterSupervisor do
 
   alias Memcachir.{Cluster, HealthCheck, PoolSupervisor}
 
-  def start_link(options \\ Application.get_all_env(:memcachir)) do
+  def start_link(options) do
     Supervisor.start_link(__MODULE__, options, name: __MODULE__)
   end
 
