@@ -6,7 +6,9 @@ defmodule FailureHandlingTest do
   @cluster ["localhost|localhost|11211", "localhost|127.0.0.1|11211"]
 
   setup_all do
-    GenServer.stop(ClusterSupervisor)
+    if Process.whereis(Memcachir.ClusterSupervisor) do
+      GenServer.stop(Memcachir.ClusterSupervisor)
+    end
 
     opts = [
       elasticache: "localhost:11211",

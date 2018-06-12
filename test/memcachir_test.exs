@@ -1,11 +1,13 @@
 defmodule MemcachirTest do
   use ExUnit.Case, async: false
 
-  alias Memcachir.{ClusterSupervisor, HealthCheck}
+  alias Memcachir.ClusterSupervisor
 
 
   setup_all do
-    GenServer.stop(ClusterSupervisor)
+    if Process.whereis(Memcachir.ClusterSupervisor) do
+      GenServer.stop(Memcachir.ClusterSupervisor)
+    end
 
     opts = [
       hosts: ["localhost:11211"],
