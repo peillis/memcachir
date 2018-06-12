@@ -2,7 +2,7 @@ defmodule Memcachir.Supervisor do
   use Supervisor
   require Logger
 
-  alias Memcachir.{Cluster, HealthCheck, PoolSupervisor}
+  alias Memcachir.{Cluster, HealthCheck, Pool}
 
   def start_link(options) do
     Supervisor.start_link(__MODULE__, options, name: __MODULE__)
@@ -12,7 +12,7 @@ defmodule Memcachir.Supervisor do
     children = [
       worker(Cluster, [options]), # needs to be started FIRST
       worker(HealthCheck, [options]),
-      worker(PoolSupervisor, [options]),
+      worker(Pool, [options]),
     ]
 
     # if the health check dies (e.g. because a node was added/removed), restart everything
