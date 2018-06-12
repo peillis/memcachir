@@ -1,4 +1,4 @@
-defmodule Memcachir.ClusterSupervisor do
+defmodule Memcachir.Supervisor do
   use Supervisor
   require Logger
 

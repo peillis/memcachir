@@ -12,11 +12,11 @@ defmodule Memcachir do
   """
   use Application
 
-  alias Memcachir.{Cluster, ClusterSupervisor, Util}
+  alias Memcachir.{Cluster, Supervisor, Util}
 
   def start(_type, _args) do
     opts = Application.get_all_env(:memcachir)
-    ClusterSupervisor.start_link(opts)
+    Supervisor.start_link(opts)
   end
 
   @doc """
