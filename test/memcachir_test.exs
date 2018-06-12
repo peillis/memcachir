@@ -1,16 +1,26 @@
 defmodule MemcachirTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
+
+  alias Memcachir.{ClusterSupervisor, HealthCheck}
+
 
   setup_all do
-    :timer.sleep(5000)
+    GenServer.stop(ClusterSupervisor)
+
+    opts = [
+      hosts: ["localhost:11211"],
+      pool: [size: 2]
+    ]
+    {:ok, _} = ClusterSupervisor.start_link(opts)
+
+    :ok
   end
 
   setup do
     assert {:ok} == Memcachir.flush()
-    Application.delete_env(:memcachir, :namespace)
-    Application.delete_env(:memcachir, :ttl)
     :ok
   end
+
 
   test "basic set get" do
     assert {:ok} == Memcachir.set("hello", "world")
@@ -18,9 +28,9 @@ defmodule MemcachirTest do
   end
 
   test "set with ttl" do
-    assert {:ok} == Memcachir.set("hello", "world", ttl: 2)
+    assert {:ok} == Memcachir.set("hello", "world", ttl: 1)
     assert {:ok, "world"} == Memcachir.get("hello")
-    :timer.sleep(2000)
+    :timer.sleep(1000)
     assert {:error, "Key not found"} == Memcachir.get("hello")
   end
 
@@ -35,5 +45,4 @@ defmodule MemcachirTest do
     assert {:ok} == Memcachir.flush()
     assert {:error, "Key not found"} == Memcachir.get("hello")
   end
-
 end

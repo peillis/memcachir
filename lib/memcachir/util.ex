@@ -3,6 +3,17 @@ defmodule Memcachir.Util do
   Utilities to read configuration.
   """
 
+  require Logger
+
+  # Returns a list like [{host1, port1}, {host2, port2}, ...]
+  # from the configured hosts parameter or reading it from elasticache
+  def get_servers(options) do
+    case Keyword.get(options, :elasticache) do
+      nil -> read_config_hosts(Keyword.get(options, :hosts))
+      host -> read_config_elasticache(host)
+    end
+  end
+
   @doc """
   Reads the hosts configuration.
   """
@@ -22,9 +33,13 @@ defmodule Memcachir.Util do
   @doc """
   Reads the elasticache configuration.
   """
-  def read_config_elasticache(elasticache) when is_binary(elasticache) do
-    {:ok, hosts, _version} = Elasticachex.get_cluster_info(elasticache)
-    read_config_hosts(hosts)
+  def read_config_elasticache(host) when is_binary(host) do
+    case Elasticachex.get_cluster_info(host) do
+      {:ok, hosts, _version} -> read_config_hosts(hosts)
+      {:error, reason} ->
+        Logger.error("unable to fetch ElastiCache servers: #{inspect reason}")
+        []
+    end
   end
   def read_config_elasticache(_) do
     raise_error()
@@ -47,8 +62,7 @@ defmodule Memcachir.Util do
   @doc """
   Returns an atom based on hostname and port
   """
-  def host_to_atom(hostname, port) do
-    String.to_atom("#{hostname}_#{port}")
+  def to_server_id({host, port}) do
+    String.to_atom("#{host}:#{port}")
   end
-
 end

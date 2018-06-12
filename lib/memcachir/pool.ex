@@ -1,6 +1,6 @@
 defmodule Memcachir.Pool do
 
-  @default_opts [
+  @default_pool_options [
     strategy: :lifo,
     size: 10,
     max_overflow: 10,
@@ -8,10 +8,8 @@ defmodule Memcachir.Pool do
   ]
 
   def start_link(options, pool_options) do
-    pool_options =
-      @default_opts
-      |> Keyword.merge(pool_options)
-    :poolboy.start_link(pool_options, options)
+    @default_pool_options
+    |> Keyword.merge(pool_options)
+    |> :poolboy.start_link(options)
   end
-
 end
