@@ -4,7 +4,7 @@ defmodule Memcachir.Pool do
     strategy: :lifo,
     size: 10,
     max_overflow: 10,
-    worker_module: Memcachir.Worker
+    worker_module: Memcache
   ]
 
   def start_link(options, pool_options) do
