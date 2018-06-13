@@ -54,7 +54,15 @@ defmodule Memcachir do
   Removes all the items from the server. Returns `{:ok}`.
   """
   def flush(opts \\ []) do
-    execute(&Memcache.flush/2, all_nodes(), [opts])
+    IO.inspect(list_nodes())
+    execute(&Memcache.flush/2, list_nodes(), [opts])
+  end
+
+  @doc """
+  List all currently registered node names, like `[:"localhost:11211"]`.
+  """
+  def list_nodes() do
+    Cluster.servers() |> Enum.map(&Util.to_server_id(&1))
   end
 
   defp execute(fun, nodes, args \\ [])
@@ -71,10 +79,6 @@ defmodule Memcachir do
     :poolboy.transaction(node, fn(worker) ->
       apply(fun, [worker | args])
     end)
-  end
-
-  defp all_nodes() do
-    Cluster.servers() |> Enum.map(&Util.to_server_id(&1))
   end
 
   defp key_to_node(key) do
