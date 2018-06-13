@@ -14,7 +14,11 @@ defmodule Memcachir.UtilTest do
 
   test "read elasticache configuration" do
     defmodule MockElasticache do
-      def get_cluster_info(host, port \\ 11211) do
+      def get_cluster_info('invalid', _port) do
+        raise "unable to talk to ElastiCache"
+      end
+
+      def get_cluster_info(host, port) do
         {:ok, ["#{host}:#{port}"], "1.4.14"}
       end
     end
@@ -25,5 +29,7 @@ defmodule Memcachir.UtilTest do
       [{'localhost', 11211}]
     assert read_config_elasticache("other:80", MockElasticache) ==
       [{'other', 80}]
+    assert read_config_elasticache("invalid", MockElasticache) ==
+      []
   end
 end

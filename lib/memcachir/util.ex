@@ -36,11 +36,17 @@ defmodule Memcachir.Util do
   def read_config_elasticache(host, elasticache_mod \\ Elasticachex)
 
   def read_config_elasticache(host, elasticache_mod) when is_binary(host) do
-    {host, port} = parse_hostname(host)
-    case elasticache_mod.get_cluster_info(host, port) do
-      {:ok, hosts, _version} -> read_config_hosts(hosts)
-      {:error, reason} ->
-        Logger.error("unable to fetch ElastiCache servers: #{inspect reason}")
+    try do
+      {host, port} = parse_hostname(host)
+      case elasticache_mod.get_cluster_info(host, port) do
+        {:ok, hosts, _version} -> read_config_hosts(hosts)
+        {:error, reason} ->
+          Logger.error("unable to fetch ElastiCache servers: #{inspect reason}")
+          []
+      end
+    rescue
+      e ->
+        Logger.error("unable to fetch ElastiCache servers: #{inspect e}")
         []
     end
   end
