@@ -54,7 +54,6 @@ defmodule Memcachir do
   Removes all the items from the server. Returns `{:ok}`.
   """
   def flush(opts \\ []) do
-    IO.inspect(list_nodes())
     execute(&Memcache.flush/2, list_nodes(), [opts])
   end
 
