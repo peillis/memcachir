@@ -1,28 +1,21 @@
 defmodule Memcachir.Supervisor do
   use Supervisor
+  require Logger
 
-  alias Memcachir.Util
+  alias Memcachir.{Cluster, HealthCheck, Pool}
 
-  def start_link(options, pool_options) do
-    Supervisor.start_link(__MODULE__, [options, pool_options])
+  def start_link(options) do
+    Supervisor.start_link(__MODULE__, options, name: __MODULE__)
   end
 
-  def init([options, pool_options]) do
-    # set a worker for every host in servers
-    children = Enum.map(options[:servers], fn({host, port}) ->
-      name = Util.host_to_atom(host, port)
-      options =
-        options
-        |> Keyword.put(:hostname, host)
-        |> Keyword.put(:port, port)
-      pool_options =
-        pool_options
-        |> Keyword.put(:name, {:local, name})
-      worker(Memcachir.Pool, [options, pool_options], id: name)
-    end)
+  def init(options) do
+    children = [
+      worker(Cluster, [options]), # needs to be started FIRST
+      worker(HealthCheck, [options]),
+      worker(Pool, [options]),
+    ]
 
-    opts = [strategy: :one_for_one]
-
-    supervise(children, opts)
+    # if the health check dies (e.g. because a node was added/removed), restart everything
+    supervise(children, strategy: :one_for_all)
   end
 end

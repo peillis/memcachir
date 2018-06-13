@@ -36,7 +36,7 @@ defmodule Memcachir.Mixfile do
     [{:benchfella, "~> 0.3.0", only: :dev},
      {:credo, "~> 0.7", only: [:dev, :test]},
      {:dialyxir, "~> 0.5", only: :dev, runtime: false},
-     {:elasticachex, "~> 1.0"},
+     {:elasticachex, "~> 1.1"},
      {:ex_doc, "~> 0.15", only: :dev},
      {:libring, "~> 1.1"},
      {:memcachex, "~> 0.4"},

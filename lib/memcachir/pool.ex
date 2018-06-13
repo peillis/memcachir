@@ -1,17 +1,38 @@
 defmodule Memcachir.Pool do
+  use Supervisor
 
-  @default_opts [
+  alias Memcachir.{Cluster, Util}
+
+  @default_pool_options [
     strategy: :lifo,
     size: 10,
     max_overflow: 10,
-    worker_module: Memcachir.Worker
+    worker_module: Memcache
   ]
 
-  def start_link(options, pool_options) do
-    pool_options =
-      @default_opts
-      |> Keyword.merge(pool_options)
-    :poolboy.start_link(pool_options, options)
+  def start_link(options) do
+    Supervisor.start_link(__MODULE__, options, name: __MODULE__)
   end
 
+  def init(options) do
+    children =
+      Cluster.servers()
+      |> Enum.map(fn({host, port}) ->
+        pool_name = Util.to_server_id({host, port})
+
+        options =
+          options
+          |> Keyword.put(:hostname, host)
+          |> Keyword.put(:port, port)
+
+        pool_options =
+          @default_pool_options
+          |> Keyword.merge(Keyword.get(options, :pool, []))
+          |> Keyword.put(:name, {:local, pool_name})
+
+        worker(:poolboy, [pool_options, options], id: pool_name)
+      end)
+
+    supervise(children, [strategy: :one_for_one])
+  end
 end

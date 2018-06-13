@@ -1,6 +1,8 @@
 use Mix.Config
 
 config :memcachir,
-  hosts: "localhost",
-  pool: [
-    size: 1]
+  pool: [size: 2],
+  health_check: 100
+
+config :elasticachex,
+  socket_module: MockSocketModule
