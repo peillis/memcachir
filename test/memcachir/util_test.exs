@@ -14,8 +14,8 @@ defmodule Memcachir.UtilTest do
 
   test "read elasticache configuration" do
     defmodule MockElasticache do
-      def get_cluster_info('invalid', _port) do
-        raise "unable to talk to ElastiCache"
+      def get_cluster_info("invalid", _port) do
+        {:error, "unable to connect"}
       end
 
       def get_cluster_info(host, port) do
