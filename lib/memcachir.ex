@@ -63,6 +63,14 @@ defmodule Memcachir do
   end
 
   @doc """
+  increments the key by value
+  """
+  def incr(key, value \\ 1, opts \\ []) do
+    node = key_to_node(key)
+    execute(&Memcache.incr/3, node, [key, [{:by, value} | opts]])
+  end
+
+  @doc """
   Sets the key to value.
   """
   def set(key, value, opts \\ []) do
