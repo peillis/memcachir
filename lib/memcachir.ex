@@ -12,27 +12,11 @@ defmodule Memcachir do
   """
   use Application
 
-  alias Memcachir.Util
+  alias Memcachir.{Cluster, Supervisor, Util}
 
-  @doc """
-  Starts application.
-  """
   def start(_type, _args) do
-    servers = get_servers()
-
-    # Build the hashring
-    {:ok, _pid} = HashRing.Managed.new(:memcachir_ring)
-    Enum.each(servers, fn({host, port}) ->
-      :ok = HashRing.Managed.add_node(
-              :memcachir_ring, Util.host_to_atom(host, port))
-    end)
-
-    options =
-      Application.get_all_env(:memcachir)
-      |> Keyword.put(:servers, servers)
-    pool_options = Application.get_env(:memcachir, :pool, [])
-
-    Memcachir.Supervisor.start_link(options, pool_options)
+    opts = Application.get_all_env(:memcachir)
+    Supervisor.start_link(opts)
   end
 
   @doc """
@@ -40,60 +24,66 @@ defmodule Memcachir do
   if the given key doesn't exist.
   """
   def get(key, opts \\ []) do
-    node = key_to_node(key)
-    execute(&Memcache.get/3, node, [key, opts])
+    case key_to_node(key) do
+      {:ok, node} -> execute(&Memcache.get/3, node, [key, opts])
+      {:error, reason} -> {:error, "unable to get: #{reason}"}
+    end
   end
 
   @doc """
   Sets the key to value.
   """
   def set(key, value, opts \\ []) do
-    node = key_to_node(key)
-    execute(&Memcache.set/4, node, [key, value, opts])
+    case key_to_node(key) do
+      {:ok, node} -> execute(&Memcache.set/4, node, [key, value, opts])
+      {:error, reason} -> {:error, "unable to set: #{reason}"}
+    end
   end
 
   @doc """
   Removes the item with the specified key. Returns `{:ok, :deleted}`
   """
   def delete(key) do
-    node = key_to_node(key)
-    execute(&Memcache.delete/2, node, [key])
+    case key_to_node(key) do
+      {:ok, node} -> execute(&Memcache.delete/2, node, [key])
+      {:error, reason} -> {:error, "unable to delete: #{reason}"}
+    end
   end
 
   @doc """
   Removes all the items from the server. Returns `{:ok}`.
   """
   def flush(opts \\ []) do
-    nodes = HashRing.Managed.nodes(:memcachir_ring)
-    execute(&Memcache.flush/2, nodes, [opts])
+    execute(&Memcache.flush/2, list_nodes(), [opts])
   end
 
-  def execute(fun, nodes, args \\ [])
-  def execute(fun, [node | nodes], args) do
+  @doc """
+  List all currently registered node names, like `[:"localhost:11211"]`.
+  """
+  def list_nodes() do
+    Cluster.servers() |> Enum.map(&Util.to_server_id(&1))
+  end
+
+  defp execute(fun, nodes, args \\ [])
+  defp execute(_fun, [], _args) do
+    {:error, "unable to flush: no_nodes"}
+  end
+  defp execute(fun, [node | nodes], args) do
     if length(nodes) > 0 do
       execute(fun, nodes, args)
     end
     execute(fun, node, args)
   end
-  def execute(fun, node, args) do
+  defp execute(fun, node, args) do
     :poolboy.transaction(node, fn(worker) ->
       apply(fun, [worker | args])
     end)
   end
 
   defp key_to_node(key) do
-    HashRing.Managed.key_to_node(:memcachir_ring, key)
-  end
-
-  # Returns a list like [{host1, port1}, {host2, port2}, ...]
-  # from the configured hosts parameter or reading it from elasticache
-  defp get_servers() do
-    case Application.get_env(:memcachir, :elasticache) do
-      nil ->
-        Util.read_config_hosts(Application.get_env(:memcachir, :hosts))
-      elasticache ->
-        Util.read_config_elasticache(elasticache)
+    case Cluster.key_to_node(key) do
+      {:error, {:invalid_ring, reason}} -> {:error, reason}
+      node -> {:ok, Util.to_server_id(node)}
     end
   end
-
 end
