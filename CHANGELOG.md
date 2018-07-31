@@ -1,6 +1,9 @@
 # Change Log
 
-  * Upgrade libring to v1.1.0
+## v3.1.0
+
+  * More resilient to ElastiCache errors: node removal/addition.
+  * Multiple lib upgrades.
 
 ## v3.0.0
 
