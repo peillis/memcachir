@@ -6,7 +6,7 @@ defmodule Memcachir.Mixfile do
   def project do
     [app: :memcachir,
      version: @version,
-     elixir: "~> 1.4",
+     elixir: "~> 1.7",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      description: description(),
@@ -33,11 +33,11 @@ defmodule Memcachir.Mixfile do
 
   # Type "mix help deps" for more examples and options
   defp deps do
-    [{:benchfella, "~> 0.3.0", only: :dev},
-     {:credo, "~> 0.7", only: [:dev, :test]},
+    [{:benchfella, "~> 0.3", only: :dev},
+     {:credo, "~> 0.10", only: [:dev, :test]},
      {:dialyxir, "~> 0.5", only: :dev, runtime: false},
      {:elasticachex, "~> 1.1"},
-     {:ex_doc, "~> 0.15", only: :dev},
+     {:ex_doc, "~> 0.19", only: :dev},
      {:libring, "~> 1.1"},
      {:memcachex, "~> 0.4"},
      {:poolboy, "~> 1.5"}]
