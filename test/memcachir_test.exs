@@ -44,6 +44,14 @@ defmodule MemcachirTest do
     assert result["hey"] == "world!"
   end
 
+  test "incr" do
+    {:ok} = Memcachir.set("incr", "1")
+
+    {:ok, result} = Memcachir.incr("incr")
+
+    assert result == 2
+  end
+
   test "mset" do
     {:ok, _} = Memcachir.mset([{"hello", "world"}, {"hey", "world!"}])
 
