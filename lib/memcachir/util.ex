@@ -20,12 +20,15 @@ defmodule Memcachir.Util do
   def read_config_hosts(hosts) when is_list(hosts) do
     Enum.map(hosts, &parse_hostname/1)
   end
+
   def read_config_hosts(hosts) when is_binary(hosts) do
     read_config_hosts([hosts])
   end
+
   def read_config_hosts(nil) do
     read_config_hosts("localhost")
   end
+
   def read_config_hosts(_) do
     raise_error()
   end
@@ -37,13 +40,17 @@ defmodule Memcachir.Util do
 
   def read_config_elasticache(host, elasticache_mod) when is_binary(host) do
     {host, port} = parse_hostname(host)
+
     case elasticache_mod.get_cluster_info(to_string(host), port) do
-      {:ok, hosts, _version} -> read_config_hosts(hosts)
+      {:ok, hosts, _version} ->
+        read_config_hosts(hosts)
+
       {:error, reason} ->
-        Logger.error("unable to fetch ElastiCache servers: #{inspect reason}")
+        Logger.error("unable to fetch ElastiCache servers: #{inspect(reason)}")
         []
     end
   end
+
   def read_config_elasticache(_, _) do
     raise_error()
   end
@@ -52,9 +59,12 @@ defmodule Memcachir.Util do
     case String.split(hostname, ":") do
       [hostname, port] ->
         {String.to_charlist(hostname), String.to_integer(port)}
+
       [hostname] ->
         {String.to_charlist(hostname), 11_211}
-      _ -> raise_error()
+
+      _ ->
+        raise_error()
     end
   end
 

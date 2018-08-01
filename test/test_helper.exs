@@ -1,8 +1,6 @@
 ExUnit.start()
 
-
 defmodule MockSocketModule do
-
   def start_link() do
     Agent.start_link(fn -> [] end, name: __MODULE__)
   end
@@ -16,10 +14,14 @@ defmodule MockSocketModule do
 
   def send_and_recv(_socket, command, _timeout) do
     case command do
-      "version\n" -> {:ok, "VERSION 1.4.14\r\n"}
+      "version\n" ->
+        {:ok, "VERSION 1.4.14\r\n"}
+
       "config get cluster\n" ->
         servers = get() |> Enum.join(" ")
-        {:ok, "CONFIG cluster 0 #{String.length(servers)}\r\n1\n#{servers}\n\r\nEND\r\n"}
+
+        {:ok,
+         "CONFIG cluster 0 #{String.length(servers)}\r\n1\n#{servers}\n\r\nEND\r\n"}
     end
   end
 
@@ -28,11 +30,11 @@ defmodule MockSocketModule do
   end
 
   def update(servers) do
-    Agent.update(__MODULE__, fn (_) -> servers end)
-    send Memcachir.HealthCheck, :check
-    Process.sleep(200) # wait for it to be picked up
+    Agent.update(__MODULE__, fn _ -> servers end)
+    send(Memcachir.HealthCheck, :check)
+    # wait for it to be picked up
+    Process.sleep(200)
   end
 end
-
 
 MockSocketModule.start_link()

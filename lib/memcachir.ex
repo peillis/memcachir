@@ -65,17 +65,21 @@ defmodule Memcachir do
   end
 
   defp execute(fun, nodes, args \\ [])
+
   defp execute(_fun, [], _args) do
     {:error, "unable to flush: no_nodes"}
   end
+
   defp execute(fun, [node | nodes], args) do
     if length(nodes) > 0 do
       execute(fun, nodes, args)
     end
+
     execute(fun, node, args)
   end
+
   defp execute(fun, node, args) do
-    :poolboy.transaction(node, fn(worker) ->
+    :poolboy.transaction(node, fn worker ->
       apply(fun, [worker | args])
     end)
   end

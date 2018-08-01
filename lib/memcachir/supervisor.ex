@@ -10,9 +10,10 @@ defmodule Memcachir.Supervisor do
 
   def init(options) do
     children = [
-      worker(Cluster, [options]), # needs to be started FIRST
+      # needs to be started FIRST
+      worker(Cluster, [options]),
       worker(HealthCheck, [options]),
-      supervisor(Pool, [options]),
+      supervisor(Pool, [options])
     ]
 
     # if the health check dies (e.g. because a node was added/removed), restart everything

@@ -10,11 +10,11 @@ defmodule Memcachir.Cluster do
 
   def init(options) do
     servers = Util.get_servers(options)
-    Logger.info("starting cluster with servers: #{inspect servers}")
+    Logger.info("starting cluster with servers: #{inspect(servers)}")
 
     ring =
       servers
-      |> Enum.reduce(HashRing.new(), fn({host, port}, ring) ->
+      |> Enum.reduce(HashRing.new(), fn {host, port}, ring ->
         HashRing.add_node(ring, {host, port})
       end)
 

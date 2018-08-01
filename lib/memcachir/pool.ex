@@ -17,7 +17,7 @@ defmodule Memcachir.Pool do
   def init(options) do
     children =
       Cluster.servers()
-      |> Enum.map(fn({host, port}) ->
+      |> Enum.map(fn {host, port} ->
         pool_name = Util.to_server_id({host, port})
 
         options =
@@ -33,6 +33,6 @@ defmodule Memcachir.Pool do
         worker(:poolboy, [pool_options, options], id: pool_name)
       end)
 
-    supervise(children, [strategy: :one_for_one])
+    supervise(children, strategy: :one_for_one)
   end
 end

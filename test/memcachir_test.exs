@@ -1,7 +1,6 @@
 defmodule MemcachirTest do
   use ExUnit.Case, async: false
 
-
   setup do
     assert :ok == Application.stop(:memcachir)
     Application.delete_env(:memcachir, :elasticache)
@@ -10,7 +9,6 @@ defmodule MemcachirTest do
     assert {:ok} == Memcachir.flush()
     :ok
   end
-
 
   test "basic set get" do
     assert {:ok} == Memcachir.set("hello", "world")

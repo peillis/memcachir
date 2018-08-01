@@ -3,9 +3,7 @@ defmodule FailureHandlingTest do
 
   alias Memcachir.Cluster
 
-
   @cluster ["localhost|localhost|11211", "localhost|127.0.0.1|11211"]
-
 
   setup do
     assert :ok == Application.stop(:memcachir)
@@ -15,16 +13,18 @@ defmodule FailureHandlingTest do
     :ok
   end
 
-
   test "survive ElastiCache failure" do
     MockSocketModule.update([])
 
-    assert {:error, "unable to set: no_nodes"} == Memcachir.set("hello", "world")
+    assert {:error, "unable to set: no_nodes"} ==
+             Memcachir.set("hello", "world")
+
     assert {:error, "unable to delete: no_nodes"} == Memcachir.delete("hello")
     assert {:error, "unable to get: no_nodes"} == Memcachir.get("hello")
     assert {:error, "unable to flush: no_nodes"} == Memcachir.flush()
 
-    MockSocketModule.update(@cluster) # it's back up
+    # it's back up
+    MockSocketModule.update(@cluster)
 
     assert {:ok} == Memcachir.set("hello", "world")
   end

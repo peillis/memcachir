@@ -19,14 +19,17 @@ defmodule Memcachir.HealthCheck do
   end
 
   def handle_info(:check, options) do
-    known_servers = Cluster.servers() |> Enum.into(MapSet.new)
-    actual_servers = Util.get_servers(options) |> Enum.into(MapSet.new)
+    known_servers = Cluster.servers() |> Enum.into(MapSet.new())
+    actual_servers = Util.get_servers(options) |> Enum.into(MapSet.new())
 
     if MapSet.equal?(known_servers, actual_servers) do
       schedule_health_check(options)
       {:noreply, options}
     else
-      {:stop, "ElastiCache servers changed from #{inspect known_servers} to #{inspect actual_servers}", options}
+      {:stop,
+       "ElastiCache servers changed from #{inspect(known_servers)} to #{
+         inspect(actual_servers)
+       }", options}
     end
   end
 
