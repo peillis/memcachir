@@ -64,8 +64,6 @@ defmodule Memcachir do
     Cluster.servers() |> Enum.map(&Util.to_server_id(&1))
   end
 
-  defp execute(fun, nodes, args \\ [])
-
   defp execute(_fun, [], _args) do
     {:error, "unable to flush: no_nodes"}
   end
