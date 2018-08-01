@@ -73,6 +73,40 @@ defmodule Memcachir do
   end
 
   @doc """
+  Accepts a list of mcached keys, and returns either `{:ok, %{key => val}}` for each
+  found key or `{:error, any}`
+  """
+  def mget(keys, opts \\ []) do
+    grouped_keys = Enum.group_by(keys, &key_to_node/1)
+    exec_parallel(&Memcache.multi_get/3, grouped_keys, [opts])
+  end
+
+  @doc """
+  Accepts a list of `{key, val}` pairs and returns the store results for each
+  node touched
+  """
+  def mset(commands, opts \\ []) do
+    grouped_keys = Enum.group_by(commands, &key_to_node(elem(&1, 0)))
+    exec_parallel(&Memcache.multi_set/3, grouped_keys, [opts], &Enum.concat/2)
+  end
+
+  @doc """
+  Multi-set with cas option
+  """
+  def mset_cas(commands, opts \\ []) do
+    grouped_keys = Enum.group_by(commands, &key_to_node(elem(&1, 0)))
+    exec_parallel(&Memcache.multi_set_cas/3, grouped_keys, [opts], &Enum.concat/2)
+  end
+
+  @doc """
+  increments the key by value
+  """
+  def incr(key, value \\ 1, opts \\ []) do
+    node = key_to_node(key)
+    execute(&Memcache.incr/3, node, [key, [{:by, value} | opts]])
+  end
+
+  @doc """
   Sets the key to value.
   """
   def set(key, value, opts \\ []) do
@@ -143,7 +177,7 @@ defmodule Memcachir do
   Accepts a memcache operation closure, a grouped map of %{node => args} and executes
   the operations in parallel for all given nodes.  The result is of form {:ok, enumerable}
   where enumerable is the merged result of all operations.
-
+  
   Additionally, you can pass `args` to supply memcache ops to each of the executions
   and `merge_fun` (a 2-arity func) which configures how the result is merged into the final result set.
   For instance, `mget/2` returns a map of key, val pairs in its result, and utilizes `Map.merge/2`.
