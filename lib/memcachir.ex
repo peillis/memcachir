@@ -63,6 +63,14 @@ defmodule Memcachir do
   end
 
   @doc """
+  Multi-set with cas option
+  """
+  def mset_cas(commands, opts \\ []) do
+    grouped_keys = Enum.group_by(commands, &key_to_node(elem(&1, 0)))
+    exec_parallel(&Memcache.multi_set_cas/3, grouped_keys, [opts], &Enum.concat/2)
+  end
+
+  @doc """
   increments the key by value
   """
   def incr(key, value \\ 1, opts \\ []) do
