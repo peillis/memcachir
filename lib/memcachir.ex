@@ -35,8 +35,10 @@ defmodule Memcachir do
   found key or `{:error, any}`
   """
   def mget(keys, opts \\ []) do
-    grouped_keys = Enum.group_by(keys, &key_to_node/1)
-    exec_parallel(&Memcache.multi_get/3, grouped_keys, [opts])
+    case group_by_node(keys) do
+      {:ok, grouped_keys} -> exec_parallel(&Memcache.multi_get/3, grouped_keys, [opts])
+      {:error, reason} -> {:error, "unable to get: #{reason}"}
+    end
   end
 
   @doc """
@@ -44,16 +46,30 @@ defmodule Memcachir do
   node touched
   """
   def mset(commands, opts \\ []) do
-    grouped_keys = Enum.group_by(commands, &key_to_node(elem(&1, 0)))
-    exec_parallel(&Memcache.multi_set/3, grouped_keys, [opts], &Enum.concat/2)
+    case group_by_node(commands, &elem(&1, 0)) do
+      {:ok, grouped_keys} -> exec_parallel(&Memcache.multi_set/3, grouped_keys, [opts], &Enum.concat/2)
+      {:error, reason} -> {:error, "unable to set: #{reason}"}
+    end
+  end
+
+  @doc """
+  Multi-set with cas option
+  """
+  def mset_cas(commands, opts \\ []) do
+    case group_by_node(commands, &elem(&1, 0)) do
+      {:ok, grouped_keys} -> exec_parallel(&Memcache.multi_set_cas/3, grouped_keys, [opts], &Enum.concat/2)
+      {:error, reason} -> {:error, "unable to set: #{reason}"}
+    end
   end
 
   @doc """
   increments the key by value
   """
   def incr(key, value \\ 1, opts \\ []) do
-    node = key_to_node(key)
-    execute(&Memcache.incr/3, node, [key, [{:by, value} | opts]])
+    case key_to_node(key) do
+      {:ok, node} -> execute(&Memcache.incr/3, node, [key, [{:by, value} | opts]])
+      {:error, reason} -> {:error, "unable to inc: #{reason}"}
+    end
   end
 
   @doc """
@@ -92,6 +108,21 @@ defmodule Memcachir do
 
   defp execute(_fun, [], _args) do
     {:error, "unable to flush: no_nodes"}
+  end
+
+  defp group_by_node(keys, get_key \\ fn k -> k end) do
+    nodes = Enum.map(keys, fn value ->
+      node =
+        value
+        |> get_key.()
+        |> key_to_node()
+      {node, value}
+    end)
+    
+    case Enum.find(nodes, fn {{status, _}, _} -> status == :error end) do
+      {:error, {:invalid_ring, reason}} -> {:error, :reason}
+      _ -> {:ok, Enum.group_by(nodes, fn {{:ok, node}, value} -> node end, fn {_, val} -> val end)}
+    end
   end
 
   defp execute(fun, [node | nodes], args) do
