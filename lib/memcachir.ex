@@ -110,18 +110,20 @@ defmodule Memcachir do
     {:error, "unable to flush: no_nodes"}
   end
 
-  defp group_by_node(keys, get_key \\ fn k -> k end) do
-    nodes = Enum.map(keys, fn value ->
-      node =
-        value
-        |> get_key.()
-        |> key_to_node()
-      {node, value}
-    end)
-    
-    case Enum.find(nodes, fn {{status, _}, _} -> status == :error end) do
-      {:error, {:invalid_ring, reason}} -> {:error, :reason}
-      _ -> {:ok, Enum.group_by(nodes, fn {{:ok, node}, value} -> node end, fn {_, val} -> val end)}
+  defp group_by_node(commands, get_key \\ fn k -> k end) do
+    key_to_command = Enum.into(commands, %{}, fn c -> {get_key.(c), c} end)
+
+    commands
+    |> Enum.map(get_key)
+    |> Cluster.keys_to_nodes()
+    |> case do
+      {:ok, keys_to_nodes} ->
+        nodes_to_keys =
+          keys_to_nodes
+          |> Enum.group_by(fn {_, n} -> Util.to_server_id(n) end, fn {k, _} -> key_to_command[k] end)
+
+        {:ok, nodes_to_keys}
+      {:error, error} -> {:error, error}
     end
   end
 
