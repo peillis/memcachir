@@ -33,4 +33,31 @@ defmodule MemcachirTest do
     assert {:ok} == Memcachir.flush()
     assert {:error, "Key not found"} == Memcachir.get("hello")
   end
+
+  test "mget" do
+    {:ok} = Memcachir.set("hello", "world")
+    {:ok} = Memcachir.set("hey", "world!")
+
+    {:ok, result} = Memcachir.mget(["hello", "hey"])
+
+    assert result["hello"] == "world"
+    assert result["hey"] == "world!"
+  end
+
+  test "incr" do
+    {:ok} = Memcachir.set("incr", "1")
+
+    {:ok, result} = Memcachir.incr("incr")
+
+    assert result == 2
+  end
+
+  test "mset" do
+    {:ok, _} = Memcachir.mset([{"hello", "world"}, {"hey", "world!"}])
+
+    {:ok, result} = Memcachir.mget(["hello", "hey"])
+
+    assert result["hello"] == "world"
+    assert result["hey"] == "world!"
+  end
 end

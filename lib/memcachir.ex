@@ -31,6 +31,48 @@ defmodule Memcachir do
   end
 
   @doc """
+  Accepts a list of mcached keys, and returns either `{:ok, %{key => val}}` for each
+  found key or `{:error, any}`
+  """
+  def mget(keys, opts \\ []) do
+    case group_by_node(keys) do
+      {:ok, grouped_keys} -> exec_parallel(&Memcache.multi_get/3, grouped_keys, [opts])
+      {:error, reason} -> {:error, "unable to get: #{reason}"}
+    end
+  end
+
+  @doc """
+  Accepts a list of `{key, val}` pairs and returns the store results for each
+  node touched
+  """
+  def mset(commands, opts \\ []) do
+    case group_by_node(commands, &elem(&1, 0)) do
+      {:ok, grouped_keys} -> exec_parallel(&Memcache.multi_set/3, grouped_keys, [opts], &Enum.concat/2)
+      {:error, reason} -> {:error, "unable to set: #{reason}"}
+    end
+  end
+
+  @doc """
+  Multi-set with cas option
+  """
+  def mset_cas(commands, opts \\ []) do
+    case group_by_node(commands, &elem(&1, 0)) do
+      {:ok, grouped_keys} -> exec_parallel(&Memcache.multi_set_cas/3, grouped_keys, [opts], &Enum.concat/2)
+      {:error, reason} -> {:error, "unable to set: #{reason}"}
+    end
+  end
+
+  @doc """
+  increments the key by value
+  """
+  def incr(key, value \\ 1, opts \\ []) do
+    case key_to_node(key) do
+      {:ok, node} -> execute(&Memcache.incr/3, node, [key, [{:by, value} | opts]])
+      {:error, reason} -> {:error, "unable to inc: #{reason}"}
+    end
+  end
+
+  @doc """
   Sets the key to value.
   """
   def set(key, value, opts \\ []) do
@@ -68,6 +110,23 @@ defmodule Memcachir do
     {:error, "unable to flush: no_nodes"}
   end
 
+  defp group_by_node(commands, get_key \\ fn k -> k end) do
+    key_to_command = Enum.into(commands, %{}, fn c -> {get_key.(c), c} end)
+
+    commands
+    |> Enum.map(get_key)
+    |> Cluster.keys_to_nodes()
+    |> case do
+      {:ok, keys_to_nodes} ->
+        nodes_to_keys =
+          keys_to_nodes
+          |> Enum.group_by(fn {_, n} -> Util.to_server_id(n) end, fn {k, _} -> key_to_command[k] end)
+
+        {:ok, nodes_to_keys}
+      {:error, error} -> {:error, error}
+    end
+  end
+
   defp execute(fun, [node | nodes], args) do
     if length(nodes) > 0 do
       execute(fun, nodes, args)
@@ -80,6 +139,29 @@ defmodule Memcachir do
     :poolboy.transaction(node, fn worker ->
       apply(fun, [worker | args])
     end)
+  end
+
+  @doc """
+  Accepts a memcache operation closure, a grouped map of %{node => args} and executes
+  the operations in parallel for all given nodes.  The result is of form {:ok, enumerable}
+  where enumerable is the merged result of all operations.
+  
+  Additionally, you can pass `args` to supply memcache ops to each of the executions
+  and `merge_fun` (a 2-arity func) which configures how the result is merged into the final result set.
+  For instance, `mget/2` returns a map of key, val pairs in its result, and utilizes `Map.merge/2`.
+  """
+  def exec_parallel(fun, grouped, args \\ [], merge_fun \\ &Map.merge/2) do
+    grouped
+    |> Enum.map(fn {node, val} -> Task.async(fn -> execute(fun, node, [val | args]) end) end)
+    |> Enum.map(&Task.await/1)
+    |> Enum.reduce({%{}, []}, fn 
+      {:ok, result}, {acc, errors} -> {merge_fun.(acc, result), errors}
+      error, {acc, errors} -> {acc, [error | errors]}
+    end)
+    |> case do
+      {map, [error | _]} when map_size(map) == 0 -> error
+      {result, _} -> {:ok, result}
+    end
   end
 
   defp key_to_node(key) do
