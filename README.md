@@ -9,7 +9,7 @@ Memcached client for Elixir. It supports clusters and AWS Elasticache.
 ```elixir
 defp deps() do
   ...
-  {:memcachir, "~> 3.1"},
+  {:memcachir, "~> 3.2"},
   ...
 end
 
