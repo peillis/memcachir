@@ -15,24 +15,22 @@ defmodule Memcachir.Pool do
   end
 
   def init(options) do
-    children =
-      Cluster.servers()
-      |> Enum.map(fn {host, port} ->
-        pool_name = Util.to_server_id({host, port})
+    Cluster.servers()
+    |> Enum.map(fn {host, port} ->
+      pool_name = Util.to_server_id({host, port})
 
-        options =
-          options
-          |> Keyword.put(:hostname, host)
-          |> Keyword.put(:port, port)
+      options =
+        options
+        |> Keyword.put(:hostname, host)
+        |> Keyword.put(:port, port)
 
-        pool_options =
-          @default_pool_options
-          |> Keyword.merge(Keyword.get(options, :pool, []))
-          |> Keyword.put(:name, {:local, pool_name})
+      pool_options =
+        @default_pool_options
+        |> Keyword.merge(Keyword.get(options, :pool, []))
+        |> Keyword.put(:name, {:local, pool_name})
 
-        worker(:poolboy, [pool_options, options], id: pool_name)
-      end)
-
-    supervise(children, strategy: :one_for_one)
+      worker(:poolboy, [pool_options, options], id: pool_name)
+    end)
+    |> supervise(strategy: :one_for_one)
   end
 end

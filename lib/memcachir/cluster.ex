@@ -2,49 +2,78 @@ defmodule Memcachir.Cluster do
   use GenServer
   require Logger
 
-  alias Memcachir.Util
+  alias Memcachir.ServiceDiscovery
+  @default_delay Application.get_env(:memcachir, :health_check, 60_000)
+  @table_name :memcachir_servers
 
   def start_link(options) do
     GenServer.start_link(__MODULE__, options, name: __MODULE__)
   end
 
-  def init(options) do
-    servers = Util.get_servers(options)
+  def init(_) do
+    servers = ServiceDiscovery.nodes()
     Logger.info("starting cluster with servers: #{inspect(servers)}")
 
-    ring =
-      servers
-      |> Enum.reduce(HashRing.new(), fn {host, port}, ring ->
-        HashRing.add_node(ring, {host, port})
-      end)
+    ring = Enum.reduce(servers, HashRing.new(), &HashRing.add_node(&2, &1))
 
-    {:ok, ring}
+    table = :ets.new(@table_name, [:set, :protected, :named_table])
+    :ets.insert(table, {:hash_ring, ring})
+    schedule_healthcheck()
+
+    {:ok, table}
   end
 
   def servers() do
-    GenServer.call(__MODULE__, :servers)
+    case get_ring() do
+      {:ok, ring} -> HashRing.nodes(ring)
+      _ -> []
+    end
   end
 
   def key_to_node(key) do
-    GenServer.call(__MODULE__, {:node, key})
+    with {:ok, ring} <- get_ring(), do: HashRing.key_to_node(ring, key)
   end
 
   def keys_to_nodes(keys) do
-    GenServer.call(__MODULE__, {:nodes, keys})
+    with {:ok, ring} <- get_ring(), do: get_nodes(keys, ring)
   end
 
-  def handle_call(:servers, _from, ring) do
-    {:reply, HashRing.nodes(ring), ring}
+  def handle_info(:health_check, table) do
+    schedule_healthcheck()
+    servers = ServiceDiscovery.nodes() |> MapSet.new()
+    current = servers() |> MapSet.new()
+
+    added   = MapSet.difference(servers, current) |> MapSet.to_list()
+    removed = MapSet.difference(current, servers) |> MapSet.to_list()
+
+    handle_diff(added, removed, table)
   end
 
-  def handle_call({:node, key}, _from, ring) do
-    {:reply, HashRing.key_to_node(ring, key), ring}
+  defp handle_diff([], [], table), do: {:noreply, table}
+  defp handle_diff(add, remove, table) do
+    {:ok, ring} = get_ring()
+    Logger.info "Added #{inspect(add)} servers to cluster"
+    Logger.info "Removed #{inspect(remove)} servers from cluster"
+
+    ring = Enum.reduce(add, ring, &HashRing.add_node(&2, &1))
+    ring = Enum.reduce(remove, ring, &HashRing.remove_node(&2, &1))
+    :ets.insert(table, {:hash_ring, ring})
+    Supervisor.stop(Memcachir.Pool, :normal)
+    {:noreply, table}
   end
 
-  def handle_call({:nodes, keys}, _from, ring) do
-    {:reply, get_nodes(keys, ring), ring}
+  defp get_ring() do
+    case :ets.lookup(@table_name, :hash_ring) do
+      [{:hash_ring, ring}] -> {:ok, ring}
+      _ -> {:error, :not_found}
+    end
   end
-  
+
+  defp schedule_healthcheck() do
+    delay = Application.get_env(:memcachir, :health_check, @default_delay)
+    Process.send_after(self(), :health_check, delay)
+  end
+
   defp get_nodes(keys, ring) do
     nodes = Enum.map(keys, &HashRing.key_to_node(ring, &1))
 

@@ -1,36 +1,39 @@
 defmodule Memcachir.UtilTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
-  import Memcachir.Util
+  alias Memcachir.Util
 
-  test "read hosts configuration" do
-    assert read_config_hosts("localhost") == [{'localhost', 11211}]
-    assert read_config_hosts("localhost:11212") == [{'localhost', 11212}]
-
-    assert read_config_hosts(["localhost:1", "other:2"]) ==
-             [{'localhost', 1}, {'other', 2}]
+  describe "#determine_service_discovery" do
+    test "It will default to hosts if no config is given for elasticache" do
+      assert Util.determine_service_discovery() == Memcachir.ServiceDiscovery.Hosts
+    end
   end
 
-  test "read elasticache configuration" do
-    defmodule MockElasticache do
-      def get_cluster_info("invalid", _port) do
-        {:error, "unable to connect"}
-      end
+  describe "#parse_hostname" do
+    test "It will default hostname without a port to 11211" do
+      {host, port} = Util.parse_hostname("localhost")
 
-      def get_cluster_info(host, port) do
-        {:ok, ["#{host}:#{port}"], "1.4.14"}
-      end
+      assert host == 'localhost'
+      assert port == 11_211
     end
 
-    assert read_config_elasticache("localhost", MockElasticache) ==
-             [{'localhost', 11211}]
+    test "It can read a host:port name" do
+      {host, port} = Util.parse_hostname("localhost:123")
 
-    assert read_config_elasticache("localhost:11211", MockElasticache) ==
-             [{'localhost', 11211}]
+      assert host == 'localhost'
+      assert port == 123
+    end
 
-    assert read_config_elasticache("other:80", MockElasticache) ==
-             [{'other', 80}]
+    test "It will raise on invalid hostnames" do
+      assert_raise ArgumentError, fn ->
+        Util.parse_hostname("host:port:what?")
+      end
+    end
+  end
 
-    assert read_config_elasticache("invalid", MockElasticache) == []
+  describe "#to_server_id" do
+    test "It returns a host_port atom" do
+      assert Util.to_server_id({"host", 123}) == :host_123
+    end
   end
 end
