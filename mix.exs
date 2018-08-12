@@ -13,6 +13,7 @@ defmodule Memcachir.Mixfile do
       description: description(),
       package: package(),
       docs: [source_ref: "v#{@version}", main: "readme", extras: ["README.md"]],
+      elixirc_paths: elixirc_paths(Mix.env),
       deps: deps()
     ]
   end
@@ -47,4 +48,7 @@ defmodule Memcachir.Mixfile do
       {:poolboy, "~> 1.5"}
     ]
   end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
 end

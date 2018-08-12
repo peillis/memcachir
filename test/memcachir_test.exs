@@ -2,10 +2,8 @@ defmodule MemcachirTest do
   use ExUnit.Case, async: false
 
   setup do
-    assert :ok == Application.stop(:memcachir)
     Application.delete_env(:memcachir, :elasticache)
     Application.put_env(:memcachir, :hosts, "localhost:11211")
-    assert :ok == Application.start(:memcachir)
     assert {:ok} == Memcachir.flush()
     :ok
   end
@@ -18,7 +16,7 @@ defmodule MemcachirTest do
   test "set with ttl" do
     assert {:ok} == Memcachir.set("hello", "world", ttl: 1)
     assert {:ok, "world"} == Memcachir.get("hello")
-    :timer.sleep(1000)
+    :timer.sleep(1001)
     assert {:error, "Key not found"} == Memcachir.get("hello")
   end
 

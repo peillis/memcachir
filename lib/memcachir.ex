@@ -103,30 +103,13 @@ defmodule Memcachir do
   List all currently registered node names, like `[:"localhost:11211"]`.
   """
   def list_nodes() do
-    Cluster.servers() |> Enum.map(&Util.to_server_id(&1))
+    Cluster.servers() 
+    |> Enum.map(&Util.to_server_id(&1))
   end
 
   defp execute(_fun, [], _args) do
     {:error, "unable to flush: no_nodes"}
   end
-
-  defp group_by_node(commands, get_key \\ fn k -> k end) do
-    key_to_command = Enum.into(commands, %{}, fn c -> {get_key.(c), c} end)
-
-    commands
-    |> Enum.map(get_key)
-    |> Cluster.keys_to_nodes()
-    |> case do
-      {:ok, keys_to_nodes} ->
-        nodes_to_keys =
-          keys_to_nodes
-          |> Enum.group_by(fn {_, n} -> Util.to_server_id(n) end, fn {k, _} -> key_to_command[k] end)
-
-        {:ok, nodes_to_keys}
-      {:error, error} -> {:error, error}
-    end
-  end
-
   defp execute(fun, [node | nodes], args) do
     if length(nodes) > 0 do
       execute(fun, nodes, args)
@@ -134,11 +117,12 @@ defmodule Memcachir do
 
     execute(fun, node, args)
   end
-
   defp execute(fun, node, args) do
-    :poolboy.transaction(node, fn worker ->
-      apply(fun, [worker | args])
-    end)
+    try do
+      :poolboy.transaction(node, &apply(fun, [&1 | args]))
+    catch
+      :exit, _ -> {:error, "Node not available"}
+    end
   end
 
   @doc """
@@ -161,6 +145,23 @@ defmodule Memcachir do
     |> case do
       {map, [error | _]} when map_size(map) == 0 -> error
       {result, _} -> {:ok, result}
+    end
+  end
+
+  defp group_by_node(commands, get_key \\ fn k -> k end) do
+    key_to_command = Enum.into(commands, %{}, fn c -> {get_key.(c), c} end)
+
+    commands
+    |> Enum.map(get_key)
+    |> Cluster.keys_to_nodes()
+    |> case do
+      {:ok, keys_to_nodes} ->
+        value_fn = fn {_, n} -> Util.to_server_id(n) end
+        key_fn   = fn {k, _} -> key_to_command[k] end
+        nodes_to_keys = Enum.group_by(keys_to_nodes, value_fn, key_fn)
+
+        {:ok, nodes_to_keys}
+      {:error, error} -> {:error, error}
     end
   end
 
