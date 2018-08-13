@@ -1,5 +1,9 @@
 # Change Log
 
+## v3.2.0
+
+  * mget, mset, mset_cas and incr new methods.
+
 ## v3.1.0
 
   * More resilient to ElastiCache errors: node removal/addition.
