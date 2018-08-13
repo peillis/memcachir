@@ -73,7 +73,7 @@ defmodule Memcachir.Cluster do
     delay = Application.get_env(:memcachir, :health_check, @default_delay)
     Process.send_after(self(), :health_check, delay)
   end
-
+  
   defp get_nodes(keys, ring) do
     nodes = Enum.map(keys, &HashRing.key_to_node(ring, &1))
 

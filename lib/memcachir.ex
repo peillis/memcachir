@@ -110,6 +110,7 @@ defmodule Memcachir do
   defp execute(_fun, [], _args) do
     {:error, "unable to flush: no_nodes"}
   end
+
   defp execute(fun, [node | nodes], args) do
     if length(nodes) > 0 do
       execute(fun, nodes, args)
@@ -162,6 +163,29 @@ defmodule Memcachir do
 
         {:ok, nodes_to_keys}
       {:error, error} -> {:error, error}
+    end
+  end
+
+  @doc """
+  Accepts a memcache operation closure, a grouped map of %{node => args} and executes
+  the operations in parallel for all given nodes.  The result is of form {:ok, enumerable}
+  where enumerable is the merged result of all operations.
+  
+  Additionally, you can pass `args` to supply memcache ops to each of the executions
+  and `merge_fun` (a 2-arity func) which configures how the result is merged into the final result set.
+  For instance, `mget/2` returns a map of key, val pairs in its result, and utilizes `Map.merge/2`.
+  """
+  def exec_parallel(fun, grouped, args \\ [], merge_fun \\ &Map.merge/2) do
+    grouped
+    |> Enum.map(fn {node, val} -> Task.async(fn -> execute(fun, node, [val | args]) end) end)
+    |> Enum.map(&Task.await/1)
+    |> Enum.reduce({%{}, []}, fn 
+      {:ok, result}, {acc, errors} -> {merge_fun.(acc, result), errors}
+      error, {acc, errors} -> {acc, [error | errors]}
+    end)
+    |> case do
+      {map, [error | _]} when map_size(map) == 0 -> error
+      {result, _} -> {:ok, result}
     end
   end
 
