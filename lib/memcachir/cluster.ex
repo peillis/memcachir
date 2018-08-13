@@ -2,7 +2,11 @@ defmodule Memcachir.Cluster do
   use GenServer
   require Logger
 
-  alias Memcachir.ServiceDiscovery
+  alias Memcachir.{
+    Pool,
+    ServiceDiscovery
+  }
+
   @default_delay Application.get_env(:memcachir, :health_check, 60_000)
   @table_name :memcachir_servers
 
@@ -18,6 +22,7 @@ defmodule Memcachir.Cluster do
 
     table = :ets.new(@table_name, [:set, :protected, :named_table, read_concurrency: true])
     :ets.insert(table, {:ring, ring})
+    Pool.initialize(servers)
     schedule_healthcheck()
 
     {:ok, table}
@@ -58,7 +63,7 @@ defmodule Memcachir.Cluster do
     ring = Enum.reduce(add, ring, &HashRing.add_node(&2, &1))
     ring = Enum.reduce(remove, ring, &HashRing.remove_node(&2, &1))
     :ets.insert(table, {:ring, ring})
-    Supervisor.stop(Memcachir.Pool, :normal)
+    Pool.handle_diff(add, remove)
     {:noreply, table}
   end
 

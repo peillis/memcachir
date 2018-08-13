@@ -10,6 +10,8 @@ defmodule MockSocketModule do
     end
   end
 
+  def close(_), do: :ok
+
   def send_and_recv(_socket, command, _timeout) do
     case command do
       "version\n" ->
@@ -31,6 +33,6 @@ defmodule MockSocketModule do
     Agent.update(__MODULE__, fn _ -> servers end)
     send(Memcachir.Cluster, :health_check)
     # wait for it to be picked up
-    Process.sleep(200)
+    Process.sleep(100)
   end
 end

@@ -15,8 +15,9 @@ defmodule Memcachir.Supervisor do
 
     children = [
       # needs to be started FIRST
+      worker(Registry, [[name: Memcachir.Registry, keys: :unique]]),
+      supervisor(Pool, [options]),
       worker(Cluster, [options]),
-      supervisor(Pool, [options])
     ]
 
     supervise(children, opts)

@@ -34,6 +34,6 @@ defmodule Memcachir.Util do
   Returns an atom based on hostname and port
   """
   def to_server_id({host, port}) do
-    String.to_atom("#{host}_#{port}")
+    {:via, Registry, {Memcachir.Registry, :"#{host}_#{port}"}}
   end
 end
