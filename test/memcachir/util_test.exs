@@ -30,10 +30,4 @@ defmodule Memcachir.UtilTest do
       end
     end
   end
-
-  describe "#to_server_id" do
-    test "It returns a host_port atom" do
-      assert Util.to_server_id({"host", 123}) == {:via, Registry, {Memcachir.Registry, :host_123}}
-    end
-  end
 end

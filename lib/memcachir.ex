@@ -12,7 +12,11 @@ defmodule Memcachir do
   """
   use Application
 
-  alias Memcachir.{Cluster, Supervisor, Util}
+  alias Memcachir.{
+    Cluster,
+    Pool,
+    Supervisor
+  }
 
   def start(_type, _args) do
     opts = Application.get_all_env(:memcachir)
@@ -104,7 +108,7 @@ defmodule Memcachir do
   """
   def list_nodes() do
     Cluster.servers() 
-    |> Enum.map(&Util.to_server_id(&1))
+    |> Enum.map(&Pool.poolname(&1))
   end
 
   defp execute(_fun, [], _args) do
@@ -138,7 +142,7 @@ defmodule Memcachir do
     grouped
     |> Enum.map(fn {node, val} -> Task.async(fn -> execute(fun, node, [val | args]) end) end)
     |> Enum.map(&Task.await/1)
-    |> Enum.reduce({%{}, []}, fn 
+    |> Enum.reduce({%{}, []}, fn
       {:ok, result}, {acc, errors} -> {merge_fun.(acc, result), errors}
       error, {acc, errors} -> {acc, [error | errors]}
     end)
@@ -153,12 +157,12 @@ defmodule Memcachir do
 
     commands
     |> Enum.map(get_key)
-    |> Cluster.keys_to_nodes()
+    |> Cluster.get_nodes()
     |> case do
       {:ok, keys_to_nodes} ->
-        value_fn = fn {_, n} -> Util.to_server_id(n) end
-        key_fn   = fn {k, _} -> key_to_command[k] end
-        nodes_to_keys = Enum.group_by(keys_to_nodes, value_fn, key_fn)
+        key_fn   = fn {_, n} -> Pool.poolname(n) end
+        value_fn = fn {k, _} -> key_to_command[k] end
+        nodes_to_keys = Enum.group_by(keys_to_nodes, key_fn, value_fn)
 
         {:ok, nodes_to_keys}
       {:error, error} -> {:error, error}
@@ -166,9 +170,9 @@ defmodule Memcachir do
   end
 
   defp key_to_node(key) do
-    case Cluster.key_to_node(key) do
-      {:error, {:invalid_ring, reason}} -> {:error, reason}
-      node -> {:ok, Util.to_server_id(node)}
+    case Cluster.get_node(key) do
+      {:error, reason} -> {:error, reason}
+      {:ok, node} -> {:ok, Pool.poolname(node)}
     end
   end
 end

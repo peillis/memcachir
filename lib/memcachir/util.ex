@@ -29,11 +29,4 @@ defmodule Memcachir.Util do
       _ -> raise ArgumentError, message: "invalid configuration"
     end
   end
-
-  @doc """
-  Returns an atom based on hostname and port
-  """
-  def to_server_id({host, port}) do
-    {:via, Registry, {Memcachir.Registry, :"#{host}_#{port}"}}
-  end
 end

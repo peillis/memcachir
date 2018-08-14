@@ -4,6 +4,10 @@ config :memcachir,
   pool: [size: 2],
   health_check: 100
 
+config :memcachir, Memcachir.Pool,
+  worker_module: Memcache,
+  size: 2
+
 config :elasticachex,
   socket_module: MockSocketModule
 

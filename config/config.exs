@@ -1,5 +1,14 @@
 use Mix.Config
 
+config :memcachir, Memcachir.Pool,
+  worker_module: Memcache
+
+config :memcachir, :memcachir_cluster,
+  pool: Memcachir.Pool,
+  router: Herd.Router.HashRing,
+  cluster: Memcachir.Cluster,
+  discovery: Memcachir.ServiceDiscovery
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"
