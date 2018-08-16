@@ -35,6 +35,8 @@ defmodule MockSocketModule do
     # wait for it to be picked up
     Process.sleep(200)
   end
+
+  def close(_), do: :ok
 end
 
 MockSocketModule.start_link()
