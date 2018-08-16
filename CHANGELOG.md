@@ -1,5 +1,9 @@
 # Change Log
 
+## v3.2.1
+
+  * Upgrade of elasticachex, to close socket connections.
+
 ## v3.2.0
 
   * mget, mset, mset_cas and incr new methods.
