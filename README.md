@@ -57,7 +57,7 @@ config :memcachir,
 
 ## Service Discovery
 
-If you don't want to use the built in service discovery methods (host list, elasticache), you can implement the `Memcachir.ServiceDiscovery` behavior, which just has a single `nodes/0` callback.  Then configure it in with:
+If you don't want to use the built in service discovery methods (host list, elasticache), you can implement the `Herd.Discovery` behavior, which just has a single `nodes/0` callback.  Then configure it in with:
 
 ```elixir
 config :memcachir, :service_discovery, MyMemcacheServiceDiscovery

@@ -2,7 +2,7 @@ defmodule Memcachir.ServiceDiscovery.Hosts do
   @moduledoc """
   Service discovery through a hardcoded list
   """
-  @behaviour Memcachir.ServiceDiscovery.API
+  @behaviour Herd.Discovery
   alias Memcachir.Util
 
   def nodes() do

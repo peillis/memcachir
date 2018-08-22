@@ -2,6 +2,7 @@ defmodule Memcachir.ServiceDiscovery.Elasticache do
   @moduledoc """
   Utilizes the elasticache cluster endpoint to infer node addresses
   """
+  @behaviour Herd.Discovery
   alias Memcachir.Util
   require Logger
 
