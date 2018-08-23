@@ -33,6 +33,6 @@ defmodule MockSocketModule do
     Agent.update(__MODULE__, fn _ -> servers end)
     send(Memcachir.Cluster, :health_check)
     # wait for it to be picked up
-    Process.sleep(100)
+    Process.sleep(200)
   end
 end
