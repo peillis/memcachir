@@ -6,10 +6,8 @@ defmodule FailureHandlingTest do
   @cluster ["localhost|localhost|11211", "localhost|127.0.0.1|11211"]
 
   setup do
-    assert :ok == Application.stop(:memcachir)
     Application.delete_env(:memcachir, :hosts)
     Application.put_env(:memcachir, :elasticache, "localhost:11211")
-    assert :ok == Application.start(:memcachir)
     :ok
   end
 
@@ -25,7 +23,7 @@ defmodule FailureHandlingTest do
 
     # it's back up
     MockSocketModule.update(@cluster)
-
+    
     assert {:ok} == Memcachir.set("hello", "world")
   end
 
