@@ -1,5 +1,9 @@
 # Change Log
 
+## v3.2.2
+
+  * Clustering Refactoring and improvements.
+
 ## v3.2.1
 
   * Upgrade of elasticachex, to close socket connections.
