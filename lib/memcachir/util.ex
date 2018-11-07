@@ -3,6 +3,10 @@ defmodule Memcachir.Util do
   Utilities to read configuration.
   """
 
+  @retry_base 10
+  @jitter     10
+  @max_retries 3
+
   @doc """
   Keep service discovery inference backwards compatible for now. The cascade is:
 
@@ -27,6 +31,18 @@ defmodule Memcachir.Util do
       [hostname, port] -> {String.to_charlist(hostname), String.to_integer(port)}
       [hostname] -> {String.to_charlist(hostname), 11_211}
       _ -> raise ArgumentError, message: "invalid configuration"
+    end
+  end
+
+  def retry(fun, retries \\ 0, max_retries \\ @max_retries) do
+    case {fun.(), retries < max_retries} do
+      {{:error, error}, true} ->
+        jitter     = :rand.uniform(@jitter)
+        sleep_time = :math.pow(2, retries) |> round()
+        :timer.sleep(@retry_base*sleep_time + jitter)
+
+        retry(fun, retries + 1, max_retries)
+      {result, _} -> result
     end
   end
 end

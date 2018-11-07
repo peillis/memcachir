@@ -8,14 +8,20 @@ defmodule Memcachir.ServiceDiscovery.Elasticache do
 
   def nodes() do
     {host, port} = endpoint() |> Util.parse_hostname()
-    mod = elasticache_module()
-    case mod.get_cluster_info(to_string(host), port) do
+    mod  = elasticache_module()
+    host = to_string(host)
+
+    (fn -> infer_nodes(mod, host, port) end)
+    |> Util.retry()
+    |> case do
       {:ok, hosts, _version} -> Util.parse_hostname(hosts)
       {:error, reason} ->
-        Logger.error("unable to fetch ElastiCache servers: #{inspect(reason)}")
+        Logger.error("unable to fetch Elasticache servers: #{inspect(reason)}")
         []
     end
   end
+
+  defp infer_nodes(module, host, port), do: module.get_cluster_info(host, port)
 
   defp endpoint(), do: Application.get_env(:memcachir, :elasticache) || config()[:endpoint]
 
