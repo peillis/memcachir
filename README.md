@@ -9,7 +9,7 @@ Memcached client for Elixir. It supports clusters and AWS Elasticache.
 ```elixir
 defp deps() do
   ...
-  {:memcachir, "~> 3.0"},
+  {:memcachir, "~> 3.2"},
   ...
 end
 
@@ -54,6 +54,16 @@ config :memcachir,
     size: 10,
     max_overflow: 10]
 ```
+
+## Service Discovery
+
+If you don't want to use the built in service discovery methods (host list, elasticache), you can implement the `Herd.Discovery` behavior, which just has a single `nodes/0` callback.  Then configure it in with:
+
+```elixir
+config :memcachir, :service_discovery, MyMemcacheServiceDiscovery
+```
+
+(NB you'll need to delete the `config :memcachir, :hosts` and `config :memcachir, :elasticache` entries to use a custom service discovery module)
 
 ## Example
 

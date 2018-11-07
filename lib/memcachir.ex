@@ -12,27 +12,15 @@ defmodule Memcachir do
   """
   use Application
 
-  alias Memcachir.Util
+  alias Memcachir.{
+    Cluster,
+    Pool,
+    Supervisor
+  }
 
-  @doc """
-  Starts application.
-  """
   def start(_type, _args) do
-    servers = get_servers()
-
-    # Build the hashring
-    {:ok, _pid} = HashRing.Managed.new(:memcachir_ring)
-    Enum.each(servers, fn({host, port}) ->
-      :ok = HashRing.Managed.add_node(
-              :memcachir_ring, Util.host_to_atom(host, port))
-    end)
-
-    options =
-      Application.get_all_env(:memcachir)
-      |> Keyword.put(:servers, servers)
-    pool_options = Application.get_env(:memcachir, :pool, [])
-
-    Memcachir.Supervisor.start_link(options, pool_options)
+    opts = Application.get_all_env(:memcachir)
+    Supervisor.start_link(opts)
   end
 
   @doc """
@@ -40,8 +28,10 @@ defmodule Memcachir do
   if the given key doesn't exist.
   """
   def get(key, opts \\ []) do
-    node = key_to_node(key)
-    execute(&Memcache.get/3, node, [key, opts])
+    case key_to_node(key) do
+      {:ok, node} -> execute(&Memcache.get/3, node, [key, opts])
+      {:error, reason} -> {:error, "unable to get: #{reason}"}
+    end
   end
 
   @doc """
@@ -49,8 +39,10 @@ defmodule Memcachir do
   found key or `{:error, any}`
   """
   def mget(keys, opts \\ []) do
-    grouped_keys = Enum.group_by(keys, &key_to_node/1)
-    exec_parallel(&Memcache.multi_get/3, grouped_keys, [opts])
+    case group_by_node(keys) do
+      {:ok, grouped_keys} -> exec_parallel(&Memcache.multi_get/3, grouped_keys, [opts])
+      {:error, reason} -> {:error, "unable to get: #{reason}"}
+    end
   end
 
   @doc """
@@ -58,68 +50,90 @@ defmodule Memcachir do
   node touched
   """
   def mset(commands, opts \\ []) do
-    grouped_keys = Enum.group_by(commands, &key_to_node(elem(&1, 0)))
-    exec_parallel(&Memcache.multi_set/3, grouped_keys, [opts], &Enum.concat/2)
+    case group_by_node(commands, &elem(&1, 0)) do
+      {:ok, grouped_keys} -> exec_parallel(&Memcache.multi_set/3, grouped_keys, [opts], &Enum.concat/2)
+      {:error, reason} -> {:error, "unable to set: #{reason}"}
+    end
   end
 
   @doc """
   Multi-set with cas option
   """
   def mset_cas(commands, opts \\ []) do
-    grouped_keys = Enum.group_by(commands, &key_to_node(elem(&1, 0)))
-    exec_parallel(&Memcache.multi_set_cas/3, grouped_keys, [opts], &Enum.concat/2)
+    case group_by_node(commands, &elem(&1, 0)) do
+      {:ok, grouped_keys} -> exec_parallel(&Memcache.multi_set_cas/3, grouped_keys, [opts], &Enum.concat/2)
+      {:error, reason} -> {:error, "unable to set: #{reason}"}
+    end
   end
 
   @doc """
   increments the key by value
   """
   def incr(key, value \\ 1, opts \\ []) do
-    node = key_to_node(key)
-    execute(&Memcache.incr/3, node, [key, [{:by, value} | opts]])
+    case key_to_node(key) do
+      {:ok, node} -> execute(&Memcache.incr/3, node, [key, [{:by, value} | opts]])
+      {:error, reason} -> {:error, "unable to inc: #{reason}"}
+    end
   end
 
   @doc """
   Sets the key to value.
   """
   def set(key, value, opts \\ []) do
-    node = key_to_node(key)
-    execute(&Memcache.set/4, node, [key, value, opts])
+    case key_to_node(key) do
+      {:ok, node} -> execute(&Memcache.set/4, node, [key, value, opts])
+      {:error, reason} -> {:error, "unable to set: #{reason}"}
+    end
   end
 
   @doc """
   Removes the item with the specified key. Returns `{:ok, :deleted}`
   """
   def delete(key) do
-    node = key_to_node(key)
-    execute(&Memcache.delete/2, node, [key])
+    case key_to_node(key) do
+      {:ok, node} -> execute(&Memcache.delete/2, node, [key])
+      {:error, reason} -> {:error, "unable to delete: #{reason}"}
+    end
   end
 
   @doc """
   Removes all the items from the server. Returns `{:ok}`.
   """
   def flush(opts \\ []) do
-    nodes = HashRing.Managed.nodes(:memcachir_ring)
-    execute(&Memcache.flush/2, nodes, [opts])
+    execute(&Memcache.flush/2, list_nodes(), [opts])
   end
 
-  def execute(fun, nodes, args \\ [])
-  def execute(fun, [node | nodes], args) do
+  @doc """
+  List all currently registered node names, like `[:"localhost:11211"]`.
+  """
+  def list_nodes() do
+    Cluster.servers() 
+    |> Enum.map(&Pool.poolname(&1))
+  end
+
+  defp execute(_fun, [], _args) do
+    {:error, "unable to flush: no_nodes"}
+  end
+  defp execute(fun, [node | nodes], args) do
     if length(nodes) > 0 do
       execute(fun, nodes, args)
     end
+
     execute(fun, node, args)
   end
-  def execute(fun, node, args) do
-    :poolboy.transaction(node, fn(worker) ->
-      apply(fun, [worker | args])
-    end)
+  defp execute(fun, node, args) do
+    try do
+      :poolboy.transaction(node, &apply(fun, [&1 | args]))
+    catch
+      :exit, _ -> {:error, "Node not available"}
+    end
   end
 
   @doc """
   Accepts a memcache operation closure, a grouped map of %{node => args} and executes
   the operations in parallel for all given nodes.  The result is of form {:ok, enumerable}
   where enumerable is the merged result of all operations.
-
+  
   Additionally, you can pass `args` to supply memcache ops to each of the executions
   and `merge_fun` (a 2-arity func) which configures how the result is merged into the final result set.
   For instance, `mget/2` returns a map of key, val pairs in its result, and utilizes `Map.merge/2`.
@@ -128,7 +142,7 @@ defmodule Memcachir do
     grouped
     |> Enum.map(fn {node, val} -> Task.async(fn -> execute(fun, node, [val | args]) end) end)
     |> Enum.map(&Task.await/1)
-    |> Enum.reduce({%{}, []}, fn 
+    |> Enum.reduce({%{}, []}, fn
       {:ok, result}, {acc, errors} -> {merge_fun.(acc, result), errors}
       error, {acc, errors} -> {acc, [error | errors]}
     end)
@@ -138,19 +152,27 @@ defmodule Memcachir do
     end
   end
 
-  defp key_to_node(key) do
-    HashRing.Managed.key_to_node(:memcachir_ring, key)
-  end
+  defp group_by_node(commands, get_key \\ fn k -> k end) do
+    key_to_command = Enum.into(commands, %{}, fn c -> {get_key.(c), c} end)
 
-  # Returns a list like [{host1, port1}, {host2, port2}, ...]
-  # from the configured hosts parameter or reading it from elasticache
-  defp get_servers() do
-    case Application.get_env(:memcachir, :elasticache) do
-      nil ->
-        Util.read_config_hosts(Application.get_env(:memcachir, :hosts))
-      elasticache ->
-        Util.read_config_elasticache(elasticache)
+    commands
+    |> Enum.map(get_key)
+    |> Cluster.get_nodes()
+    |> case do
+      {:ok, keys_to_nodes} ->
+        key_fn   = fn {_, n} -> Pool.poolname(n) end
+        value_fn = fn {k, _} -> key_to_command[k] end
+        nodes_to_keys = Enum.group_by(keys_to_nodes, key_fn, value_fn)
+
+        {:ok, nodes_to_keys}
+      {:error, error} -> {:error, error}
     end
   end
 
+  defp key_to_node(key) do
+    case Cluster.get_node(key) do
+      {:error, reason} -> {:error, reason}
+      {:ok, node} -> {:ok, Pool.poolname(node)}
+    end
+  end
 end

@@ -1,6 +1,17 @@
 # Change Log
 
-  * Upgrade libring to v1.1.0
+## v3.2.1
+
+  * Upgrade of elasticachex, to close socket connections.
+
+## v3.2.0
+
+  * mget, mset, mset_cas and incr new methods.
+
+## v3.1.0
+
+  * More resilient to ElastiCache errors: node removal/addition.
+  * Multiple lib upgrades.
 
 ## v3.0.0
 

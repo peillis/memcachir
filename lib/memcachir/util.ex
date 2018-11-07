@@ -4,51 +4,29 @@ defmodule Memcachir.Util do
   """
 
   @doc """
-  Reads the hosts configuration.
-  """
-  def read_config_hosts(hosts) when is_list(hosts) do
-    Enum.map(hosts, &parse_hostname/1)
-  end
-  def read_config_hosts(hosts) when is_binary(hosts) do
-    read_config_hosts([hosts])
-  end
-  def read_config_hosts(nil) do
-    read_config_hosts("localhost")
-  end
-  def read_config_hosts(_) do
-    raise_error()
-  end
+  Keep service discovery inference backwards compatible for now. The cascade is:
 
-  @doc """
-  Reads the elasticache configuration.
+  * if :memcachir, :elasticache is set, use Memcachir.ServiceDiscovery.Elasticache
+  * if :memcachir, :hosts is set, use Memcachir.ServiceDiscovery.Hosts
+  * otherwise use what is configured in :memcachir, :service_discovery (defaulting to Hosts)
   """
-  def read_config_elasticache(elasticache) when is_binary(elasticache) do
-    {:ok, hosts, _version} = Elasticachex.get_cluster_info(elasticache)
-    read_config_hosts(hosts)
-  end
-  def read_config_elasticache(_) do
-    raise_error()
-  end
+  def determine_service_discovery() do
+    elasticache = Application.get_env(:memcachir, :elasticache)
+    hosts = Application.get_env(:memcachir, :hosts)
 
-  defp parse_hostname(hostname) do
-    case String.split(hostname, ":") do
-      [hostname, port] ->
-        {String.to_charlist(hostname), String.to_integer(port)}
-      [hostname] ->
-        {String.to_charlist(hostname), 11_211}
-      _ -> raise_error()
+    case {elasticache, hosts} do
+      {elasticache, _} when is_binary(elasticache) -> Memcachir.ServiceDiscovery.Elasticache
+      {_, hosts} when is_list(hosts) or is_binary(hosts) -> Memcachir.ServiceDiscovery.Hosts
+      _ -> Application.get_env(:memcachir, :service_discovery, Memcachir.ServiceDiscovery.Hosts)
     end
   end
 
-  defp raise_error do
-    raise ArgumentError, message: "invalid configuration"
+  def parse_hostname(hostnames) when is_list(hostnames), do: Enum.map(hostnames, &parse_hostname/1)
+  def parse_hostname(hostname) do
+    case String.split(hostname, ":") do
+      [hostname, port] -> {String.to_charlist(hostname), String.to_integer(port)}
+      [hostname] -> {String.to_charlist(hostname), 11_211}
+      _ -> raise ArgumentError, message: "invalid configuration"
+    end
   end
-
-  @doc """
-  Returns an atom based on hostname and port
-  """
-  def host_to_atom(hostname, port) do
-    String.to_atom("#{hostname}_#{port}")
-  end
-
 end
