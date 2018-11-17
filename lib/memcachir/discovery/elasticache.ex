@@ -3,6 +3,8 @@ defmodule Memcachir.ServiceDiscovery.Elasticache do
   Utilizes the elasticache cluster endpoint to infer node addresses
   """
   @behaviour Herd.Discovery
+  @retry_opts Application.get_env(:memcachir, __MODULE__, [])
+              |> Keyword.get(:retry, [])
   alias Memcachir.Util
   require Logger
 
@@ -12,7 +14,7 @@ defmodule Memcachir.ServiceDiscovery.Elasticache do
     host = to_string(host)
 
     (fn -> infer_nodes(mod, host, port) end)
-    |> Util.retry()
+    |> Util.retry(@retry_opts)
     |> case do
       {:ok, hosts, _version} -> Util.parse_hostname(hosts)
       {:error, reason} ->
