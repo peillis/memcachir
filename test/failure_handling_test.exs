@@ -14,17 +14,13 @@ defmodule FailureHandlingTest do
   test "survive ElastiCache failure" do
     MockSocketModule.update([])
 
-    assert {:error, "unable to set: no_nodes"} ==
-             Memcachir.set("hello", "world")
-
-    assert {:error, "unable to delete: no_nodes"} == Memcachir.delete("hello")
-    assert {:error, "unable to get: no_nodes"} == Memcachir.get("hello")
-    assert {:error, "unable to flush: no_nodes"} == Memcachir.flush()
+    assert {:ok} == Memcachir.set("hello", "world")
+    assert Memcachir.get("hello") == {:ok, "world"}
 
     # it's back up
     MockSocketModule.update(@cluster)
-    
-    assert {:ok} == Memcachir.set("hello", "world")
+
+    assert Memcachir.get("hello") == {:ok, "world"}
   end
 
   test "survive ElastiCache node replacement" do
