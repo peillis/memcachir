@@ -1,5 +1,9 @@
 # Change Log
 
+## v3.2.3
+
+  * Packages upgrade.
+
 ## v3.2.2
 
   * Clustering Refactoring and improvements.
