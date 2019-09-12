@@ -73,3 +73,15 @@ iex> Memcachir.set("hello", "world")
 iex> Memcachir.get("hello")
 {:ok, "world"}
 ```
+
+Example with ttl (in seconds)
+```elixir
+iex> Memcachir.set("hello", "world", ttl: 5)
+{:ok}
+iex> Memcachir.get("hello")
+{:ok, "world"}
+iex> :timer.sleep(5001)
+:ok
+iex> Memcachir.get("hello")
+{:error, "Key not found"}
+```
