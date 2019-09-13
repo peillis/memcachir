@@ -78,6 +78,8 @@ defmodule Memcachir do
 
   @doc """
   Sets the key to value.
+  Valid option are:
+    ttl: The time in seconds that the value will be stored.
   """
   def set(key, value, opts \\ []) do
     case key_to_node(key) do
