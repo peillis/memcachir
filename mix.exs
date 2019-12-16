@@ -47,7 +47,7 @@ defmodule Memcachir.Mixfile do
       {:elasticachex, "~> 1.1"},
       {:ex_doc, "~> 0.19", only: :dev},
       {:herd, "~> 0.4.3"},
-      {:memcachex, "~> 0.4"},
+      {:memcachex, "~> 0.5"},
     ]
   end
 
