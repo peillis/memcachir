@@ -1,5 +1,9 @@
 # Change Log
 
+## v3.3.0
+
+  * Upgrade of memcachex which now has telemetry support.
+
 ## v3.2.3
 
   * Packages upgrade.
