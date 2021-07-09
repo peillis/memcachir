@@ -46,8 +46,8 @@ defmodule Memcachir.Supervisor do
   Supervises the memcachir cluster, pool and registry (which is used internally)
   """
   use Herd.Supervisor, otp_app: :memcachir,
-                      pool: Memcachir.Pool,
-                      cluster: Memcachir.Cluster
+                       pool: Memcachir.Pool,
+                       cluster: Memcachir.Cluster
 end
 
 defmodule Memcachir do
@@ -55,7 +55,6 @@ defmodule Memcachir do
   TODO
   """
   use Memcachir.Plugin, otp_app: :memcachir,
-                 pool: Memcachir.Pool,
-                 cluster: Memcachir.Cluster,
-                 supervisor: Memcachir.Supervisor
+                        pool: Memcachir.Pool,
+                        cluster: Memcachir.Cluster
 end

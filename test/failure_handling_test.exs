@@ -8,6 +8,7 @@ defmodule FailureHandlingTest do
   setup do
     Application.delete_env(:memcachir, :hosts)
     Application.put_env(:memcachir, :elasticache, "localhost:11211")
+    start_supervised(Memcachir.Supervisor)
     :ok
   end
 

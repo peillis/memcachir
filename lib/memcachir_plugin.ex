@@ -7,21 +7,13 @@ defmodule Memcachir.Plugin do
     otp_app    = Keyword.get(opts, :otp_app)
     pool       = Keyword.get(opts, :pool)
     cluster    = Keyword.get(opts, :cluster)
-    supervisor = Keyword.get(opts, :supervisor)
 
     quote do
-      use Application
       import Memcachir.Plugin
 
       @otp_app unquote(otp_app)
       @pool unquote(pool)
       @cluster unquote(cluster)
-      @supervisor unquote(supervisor)
-
-      def start(_, _) do
-        opts = Application.get_all_env(@otp_app)
-        @supervisor.start_link(opts)
-      end
 
       def get(key, opts \\ []), do: get(@cluster, @pool, key, opts)
 

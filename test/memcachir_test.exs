@@ -4,6 +4,7 @@ defmodule MemcachirTest do
   setup do
     Application.delete_env(:memcachir, :elasticache)
     Application.put_env(:memcachir, :hosts, "localhost:11211")
+    start_supervised(Memcachir.Supervisor)
     assert {:ok} == Memcachir.flush()
     :ok
   end
