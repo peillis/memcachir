@@ -1,6 +1,7 @@
 defmodule Memcachir.Mixfile do
   use Mix.Project
 
+  @source_url "https://github.com/peillis/memcachir"
   @version "3.3.0"
 
   def project do
@@ -10,15 +11,13 @@ defmodule Memcachir.Mixfile do
       elixir: "~> 1.7",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
-      description: description(),
       package: package(),
-      docs: [source_ref: "v#{@version}", main: "readme", extras: ["README.md"]],
-      elixirc_paths: elixirc_paths(Mix.env),
-      deps: deps()
+      docs: docs(),
+      deps: deps(),
+      elixirc_paths: elixirc_paths(Mix.env())
     ]
   end
 
-  # Type "mix help compile.app" for more information
   def application do
     [
       mod: {Memcachir, []},
@@ -26,31 +25,45 @@ defmodule Memcachir.Mixfile do
     ]
   end
 
-  def description do
-    "Memcached client, with connection pooling and cluster support."
-  end
-
   defp package do
-    %{
+    [
+      description:
+        "Memcached client, with connection pooling and cluster support.",
       licenses: ["MIT"],
-      links: %{"Github" => "https://github.com/peillis/memcachir"},
-      maintainers: ["Enrique Martinez"]
-    }
+      maintainers: ["Enrique Martinez"],
+      links: %{
+        "Changelog" => "https://hexdocs.pm/memcachir/changelog.html",
+        "GitHub" => @source_url
+      }
+    ]
   end
 
-  # Type "mix help deps" for more examples and options
   defp deps do
     [
       {:benchfella, "~> 0.3", only: :dev},
       {:credo, "~> 0.10", only: [:dev, :test]},
       {:dialyxir, "~> 0.5", only: :dev, runtime: false},
       {:elasticachex, "~> 1.1"},
-      {:ex_doc, "~> 0.19", only: :dev},
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:herd, "~> 0.4.3"},
-      {:memcachex, "~> 0.5"},
+      {:memcachex, "~> 0.5"}
     ]
   end
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
+
+  defp docs do
+    [
+      extras: [
+        "CHANGELOG.md": [],
+        "LICENSE.md": [title: "License"],
+        "README.md": [title: "Overview"]
+      ],
+      main: "readme",
+      source_url: @source_url,
+      source_ref: "v#{@version}",
+      formatters: ["html"]
+    ]
+  end
 end

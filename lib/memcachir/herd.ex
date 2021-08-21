@@ -1,15 +1,17 @@
 defmodule Memcachir.Cluster do
   @moduledoc """
   Manages cluster state with a regular healthcheck to the configured service discovery
-  mechanism.  Configure it with:
+  mechanism.
 
-  ```
+  Configure it with:
+
+  ```elixir
   config :memcachir, :memcachir_cluster, discovery: MyServiceDiscovery
   ```
 
-  Additionally the health check can be configured with
+  Additionally the health check can be configured with:
 
-  ```
+  ```elixir
   config :memcachir, :health_check, 10_000
   ```
   """
@@ -24,12 +26,12 @@ defmodule Memcachir.Pool do
   Dynamic supervisor for connection pooling.  If you want to modify the poolboy params,
   configure it with:
 
-  ```
+  ```elixir
   config :memcachir, Memcachir.Pool, poolboy: :params
   ```
 
   Additionally, params that will be sent to the memcachex workers are all found at the top
-  level of `:memcachir` config
+  level of `:memcachir` config.
   """
   use Herd.Pool, otp_app: :memcachir
 
@@ -48,7 +50,7 @@ end
 
 defmodule Memcachir.Supervisor do
   @moduledoc """
-  Supervises the memcachir cluster, pool and registry (which is used internally)
+  Supervises the memcachir cluster, pool and registry (which is used internally).
   """
   use Herd.Supervisor, otp_app: :memcachir,
                        pool: Memcachir.Pool,

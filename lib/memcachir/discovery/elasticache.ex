@@ -1,6 +1,6 @@
 defmodule Memcachir.ServiceDiscovery.Elasticache do
   @moduledoc """
-  Utilizes the elasticache cluster endpoint to infer node addresses
+  Utilizes the elasticache cluster endpoint to infer node addresses.
   """
   @behaviour Herd.Discovery
   @retry_opts Application.get_env(:memcachir, __MODULE__, [])

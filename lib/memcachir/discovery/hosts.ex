@@ -1,6 +1,6 @@
 defmodule Memcachir.ServiceDiscovery.Hosts do
   @moduledoc """
-  Service discovery through a hardcoded list
+  Service discovery through a hardcoded list.
   """
   @behaviour Herd.Discovery
   alias Memcachir.Util
