@@ -1,6 +1,11 @@
 # Memcachir
 
 [![Build Status](https://secure.travis-ci.org/peillis/memcachir.png)](http://travis-ci.org/peillis/memcachir)
+[![Module Version](https://img.shields.io/hexpm/v/memcachir.svg)](https://hex.pm/packages/memcachir)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/memcachir/)
+[![Total Download](https://img.shields.io/hexpm/dt/memcachir.svg)](https://hex.pm/packages/memcachir)
+[![License](https://img.shields.io/hexpm/l/memcachir.svg)](https://github.com/peillis/memcachir/blob/master/LICENSE.md)
+[![Last Updated](https://img.shields.io/github/last-commit/peillis/memcachir.svg)](https://github.com/peillis/memcachir/commits/master)
 
 Memcached client for Elixir. It supports clusters and AWS Elasticache.
 
@@ -85,3 +90,9 @@ iex> :timer.sleep(5001)
 iex> Memcachir.get("hello")
 {:error, "Key not found"}
 ```
+
+## Copyright and License
+
+Copyright (c) 2017 Enrique Martinez
+
+This library licensed under the [MIT license](./LICENSE.md).

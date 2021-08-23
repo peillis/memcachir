@@ -12,11 +12,13 @@ defmodule Memcachir.Util do
   @max_retries Keyword.get(@retry_opts, :max_retries)
 
   @doc """
-  Keep service discovery inference backwards compatible for now. The cascade is:
+  Keep service discovery inference backwards compatible for now.
 
-  * if :memcachir, :elasticache is set, use Memcachir.ServiceDiscovery.Elasticache
-  * if :memcachir, :hosts is set, use Memcachir.ServiceDiscovery.Hosts
-  * otherwise use what is configured in :memcachir, :service_discovery (defaulting to Hosts)
+  The cascade is:
+
+    * if `:memcachir`, `:elasticache` is set, use `Memcachir.ServiceDiscovery.Elasticache`
+    * if `:memcachir`, `:hosts` is set, use `Memcachir.ServiceDiscovery.Hosts`
+    * otherwise use what is configured in `:memcachir`, `:service_discovery` (defaulting to Hosts)
   """
   def determine_service_discovery() do
     elasticache = Application.get_env(:memcachir, :elasticache)

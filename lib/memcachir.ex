@@ -4,7 +4,7 @@ defmodule Memcachir do
 
   It provides connection pooling, and cluster support.
 
-  ## Example
+  ## Examples
 
       {:ok} = Memcachir.set("hello", "world")
       {:ok, "world"} = Memcachir.get("hello")
@@ -36,7 +36,7 @@ defmodule Memcachir do
 
   @doc """
   Accepts a list of mcached keys, and returns either `{:ok, %{key => val}}` for each
-  found key or `{:error, any}`
+  found key or `{:error, any}`.
   """
   def mget(keys, opts \\ []) do
     case group_by_node(keys) do
@@ -47,7 +47,7 @@ defmodule Memcachir do
 
   @doc """
   Accepts a list of `{key, val}` pairs and returns the store results for each
-  node touched
+  node touched.
   """
   def mset(commands, opts \\ []) do
     case group_by_node(commands, &elem(&1, 0)) do
@@ -57,7 +57,7 @@ defmodule Memcachir do
   end
 
   @doc """
-  Multi-set with cas option
+  Multi-set with cas option.
   """
   def mset_cas(commands, opts \\ []) do
     case group_by_node(commands, &elem(&1, 0)) do
@@ -67,7 +67,7 @@ defmodule Memcachir do
   end
 
   @doc """
-  increments the key by value
+  increments the key by value.
   """
   def incr(key, value \\ 1, opts \\ []) do
     case key_to_node(key) do
@@ -78,8 +78,10 @@ defmodule Memcachir do
 
   @doc """
   Sets the key to value.
+
   Valid option are:
-    ttl: The time in seconds that the value will be stored.
+    * `:ttl` - The time in seconds that the value will be stored.
+
   """
   def set(key, value, opts \\ []) do
     case key_to_node(key) do
@@ -89,7 +91,9 @@ defmodule Memcachir do
   end
 
   @doc """
-  Removes the item with the specified key. Returns `{:ok, :deleted}`
+  Removes the item with the specified key.
+
+  Returns `{:ok, :deleted}`.
   """
   def delete(key) do
     case key_to_node(key) do
@@ -99,7 +103,9 @@ defmodule Memcachir do
   end
 
   @doc """
-  Removes all the items from the server. Returns `{:ok}`.
+  Removes all the items from the server.
+
+  Returns `{:ok}`.
   """
   def flush(opts \\ []) do
     execute(&Memcache.flush/2, list_nodes(), [opts])
@@ -109,7 +115,7 @@ defmodule Memcachir do
   List all currently registered node names, like `[:"localhost:11211"]`.
   """
   def list_nodes() do
-    Cluster.servers() 
+    Cluster.servers()
     |> Enum.map(&Pool.poolname(&1))
   end
 
@@ -132,13 +138,18 @@ defmodule Memcachir do
   end
 
   @doc """
-  Accepts a memcache operation closure, a grouped map of %{node => args} and executes
-  the operations in parallel for all given nodes.  The result is of form {:ok, enumerable}
-  where enumerable is the merged result of all operations.
-  
-  Additionally, you can pass `args` to supply memcache ops to each of the executions
-  and `merge_fun` (a 2-arity func) which configures how the result is merged into the final result set.
-  For instance, `mget/2` returns a map of key, val pairs in its result, and utilizes `Map.merge/2`.
+  Accepts a memcache operation closure, a grouped map of `%{node => args}` and
+  executes the operations in parallel for all given nodes.
+
+  The result is of form `{:ok, enumerable}` where enumerable is the merged
+  result of all operations.
+
+  Additionally, you can pass `args` to supply memcache ops to each of the
+  executions and `merge_fun` (a 2-arity func) which configures how the result
+  is merged into the final result set.
+
+  For instance, `mget/2` returns a map of key, val pairs in its result, and
+  utilizes `Map.merge/2`.
   """
   def exec_parallel(fun, grouped, args \\ [], merge_fun \\ &Map.merge/2) do
     grouped
